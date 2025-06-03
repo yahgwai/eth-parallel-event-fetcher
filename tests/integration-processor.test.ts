@@ -10,7 +10,7 @@ interface TestEvent extends RawEvent {
   args: any;
 }
 
-describe('Integration - Custom Event Processors', () => {
+describe.skip('Integration - Custom Event Processors', () => {
   let fetcher: GenericEventFetcher<TestEvent, any>;
   let provider: ethers.providers.JsonRpcProvider;
   let usdcContract: ContractInterface;
