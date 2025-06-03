@@ -25,5 +25,14 @@ beforeAll(async () => {
 }, 10000);
 
 afterAll(async () => {
-  // Cleanup if needed
+  // Cleanup provider connections
+  if (testProvider) {
+    // For JsonRpcProvider in ethers v5, remove listeners and polling
+    testProvider.removeAllListeners();
+    testProvider.polling = false;
+    // @ts-ignore - Access internal connection to close it
+    if ((testProvider as any)._websocket) {
+      (testProvider as any)._websocket.close();
+    }
+  }
 });
