@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
 import { ContractInterface, EventProcessor, RawEvent } from '../types';
+import { testProvider } from './setup';
 
 interface TestEvent extends RawEvent {
   address: string;
@@ -12,7 +13,6 @@ interface TestEvent extends RawEvent {
 
 describe('Integration - Parallel Processing', () => {
   let fetcher: GenericEventFetcher<TestEvent, any>;
-  let provider: ethers.providers.JsonRpcProvider;
   let usdcContract: ContractInterface;
 
   beforeAll(async () => {
@@ -26,8 +26,6 @@ describe('Integration - Parallel Processing', () => {
 
     fetcher = new GenericEventFetcher(config);
     
-    provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
-    
     const usdcAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
     const transferEventTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
     
@@ -39,7 +37,7 @@ describe('Integration - Parallel Processing', () => {
         } as ethers.EventFilter)
       },
       queryFilter: async (filter: ethers.EventFilter, fromBlock?: number, toBlock?: number) => {
-        const logs = await provider.getLogs({
+        const logs = await testProvider.getLogs({
           ...filter,
           fromBlock,
           toBlock
@@ -53,11 +51,7 @@ describe('Integration - Parallel Processing', () => {
   });
 
   afterAll(async () => {
-    // Clean up provider connection
-    if (provider) {
-      provider.removeAllListeners();
-      provider.polling = false;
-    }
+    // No need to clean up provider - using shared testProvider from setup.ts
   });
 
   it('should fetch events using multiple parallel chunks', async () => {
