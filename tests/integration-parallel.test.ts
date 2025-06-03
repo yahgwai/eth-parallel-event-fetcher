@@ -54,7 +54,7 @@ describe('Integration - Parallel Processing', () => {
     // No need to clean up provider - using shared testProvider from setup.ts
   });
 
-  it.skip('should fetch events using multiple parallel chunks', async () => {
+  it('should fetch events using multiple parallel chunks', async () => {
     const progressUpdates: Array<{completed: number, total: number}> = [];
     
     const trackingProcessor: EventProcessor<TestEvent, TestEvent & {chunkInfo?: string}> = (events, contractAddress) => {
