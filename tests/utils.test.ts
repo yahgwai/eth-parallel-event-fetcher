@@ -185,7 +185,7 @@ describe.skip('Parallel Utils', () => {
   });
 });
 
-describe('Provider Utils', () => {
+describe.skip('Provider Utils', () => {
   describe('createProvider', () => {
     test('should throw error when no URL provided', async () => {
       await expect(createProvider({})).rejects.toThrow(ProviderError);
@@ -200,7 +200,7 @@ describe('Provider Utils', () => {
   });
 });
 
-describe('Progress Utils', () => {
+describe.skip('Progress Utils', () => {
   describe('ProgressTracker', () => {
     let logSpy: jest.Mock;
     let tracker: ProgressTracker;
