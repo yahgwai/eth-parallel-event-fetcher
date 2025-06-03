@@ -2,106 +2,128 @@ import { RetryableProvider } from '../src/utils/retryable-provider';
 import { ProviderError, RateLimitError } from '../src/errors';
 import { ethers } from 'ethers';
 
-// Mock ethers to prevent actual network calls
-jest.mock('ethers', () => {
-  const actualEthers = jest.requireActual('ethers');
-  
-  class MockJsonRpcProvider {
-    connection: { url?: string };
-    network: any;
-    pollingInterval: number;
-    send = jest.fn();
-    perform = jest.fn();
-    getNetwork = jest.fn();
-    _ready = jest.fn().mockResolvedValue(true);
-    
-    constructor(url?: string, network?: any) {
-      this.connection = { url };
-      this.network = network || { name: 'mainnet', chainId: 1 };
-      this.pollingInterval = 4000;
-      this.getNetwork.mockResolvedValue(this.network);
-    }
-  }
-  
-  return {
-    ...actualEthers,
-    providers: {
-      ...actualEthers.providers,
-      JsonRpcProvider: MockJsonRpcProvider
-    }
-  };
-});
-
 describe('RetryableProvider', () => {
+  let originalSend: any;
+  let originalPerform: any;
+
+  // Helper to create a mock that handles initialization calls
+  const createMockSend = (testMethodBehavior: (callCount: number) => Promise<any>) => {
+    const mockFn = jest.fn();
+    mockFn.mockImplementation((method: string) => {
+      // Handle initialization calls
+      if (method === 'eth_chainId' || method === 'net_version') {
+        return Promise.resolve('0x1');
+      }
+      
+      // Handle test method with custom behavior
+      if (method === 'test') {
+        const callCount = mockFn.mock.calls.filter((call: any[]) => call[0] === 'test').length;
+        return testMethodBehavior(callCount);
+      }
+      
+      return Promise.resolve(null);
+    });
+    return mockFn;
+  };
+
+  // Helper to count test method calls
+  const getTestCallCount = (mockFn: jest.Mock): number => {
+    return mockFn.mock.calls.filter(call => call[0] === 'test').length;
+  };
+
+  beforeAll(() => {
+    // Save original methods
+    originalSend = ethers.providers.JsonRpcProvider.prototype.send;
+    originalPerform = ethers.providers.JsonRpcProvider.prototype.perform;
+  });
+
+  afterAll(() => {
+    // Restore original methods
+    ethers.providers.JsonRpcProvider.prototype.send = originalSend;
+    ethers.providers.JsonRpcProvider.prototype.perform = originalPerform;
+  });
+
   beforeEach(() => {
+    // Reset mocks before each test
     jest.clearAllMocks();
   });
 
   describe('basic retry functionality', () => {
     test('should return result on first successful attempt', async () => {
-      const provider = new RetryableProvider();
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.send = jest.fn().mockResolvedValueOnce('success');
+      const mockSend = createMockSend(() => Promise.resolve('success'));
+      ethers.providers.JsonRpcProvider.prototype.send = mockSend;
+      
+      const provider = new RetryableProvider(undefined, undefined, {
+        maxRetries: 2,
+        initialRetryDelay: 50,
+        retryJitter: false
+      });
       
       const result = await provider.send('test', []);
       
       expect(result).toBe('success');
-      expect(parentProto.send).toHaveBeenCalledTimes(1);
+      expect(getTestCallCount(mockSend)).toBe(1);
     });
 
     test('should retry on failure and eventually succeed', async () => {
+      const mockSend = createMockSend((callCount) => {
+        if (callCount === 1) {
+          return Promise.reject(new Error('Fail 1'));
+        } else if (callCount === 2) {
+          return Promise.reject(new Error('Fail 2'));
+        } else {
+          return Promise.resolve('success');
+        }
+      });
+      
+      ethers.providers.JsonRpcProvider.prototype.send = mockSend;
+      
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 2,
         initialRetryDelay: 50,
         retryJitter: false
       });
-      
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.send = jest.fn()
-        .mockRejectedValueOnce(new Error('Fail 1'))
-        .mockRejectedValueOnce(new Error('Fail 2'))
-        .mockResolvedValueOnce('success');
       
       const result = await provider.send('test', []);
       
       expect(result).toBe('success');
-      expect(parentProto.send).toHaveBeenCalledTimes(3);
+      expect(getTestCallCount(mockSend)).toBe(3);
     });
 
     test('should throw ProviderError after exhausting retries', async () => {
+      const mockSend = createMockSend(() => Promise.reject(new Error('Always fails')));
+      ethers.providers.JsonRpcProvider.prototype.send = mockSend;
+      
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 2,
         initialRetryDelay: 50,
         retryJitter: false
       });
-      
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.send = jest.fn().mockRejectedValue(new Error('Always fails'));
       
       await expect(provider.send('test', []))
         .rejects
         .toThrow(ProviderError);
       
-      expect(parentProto.send).toHaveBeenCalledTimes(3); // Initial + 2 retries
+      expect(getTestCallCount(mockSend)).toBe(3); // Initial + 2 retries
     });
   });
 
   describe('rate limit handling', () => {
     test('should throw RateLimitError for rate limit errors', async () => {
+      const mockSend = createMockSend(() => Promise.reject(new Error('429 Too Many Requests')));
+      ethers.providers.JsonRpcProvider.prototype.send = mockSend;
+      
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 1,
         initialRetryDelay: 50,
         retryJitter: false
       });
       
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.send = jest.fn().mockRejectedValue(new Error('429 Too Many Requests'));
-      
       await expect(provider.send('test', []))
         .rejects
         .toThrow(RateLimitError);
         
-      expect(parentProto.send).toHaveBeenCalledTimes(2); // Initial + 1 retry
+      expect(getTestCallCount(mockSend)).toBe(2); // Initial + 1 retry
     });
 
     test('should identify various rate limit error messages', async () => {
@@ -114,14 +136,12 @@ describe('RetryableProvider', () => {
       ];
       
       for (const message of rateLimitMessages) {
-        jest.clearAllMocks();
+        const mockSend = createMockSend(() => Promise.reject(new Error(message)));
+        ethers.providers.JsonRpcProvider.prototype.send = mockSend;
         
         const provider = new RetryableProvider(undefined, undefined, {
           maxRetries: 0
         });
-        
-        const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-        parentProto.send = jest.fn().mockRejectedValue(new Error(message));
         
         await expect(provider.send('test', []))
           .rejects
@@ -132,17 +152,23 @@ describe('RetryableProvider', () => {
 
   describe('retry timing', () => {
     test('should use exponential backoff', async () => {
+      const mockSend = createMockSend((callCount) => {
+        if (callCount === 1) {
+          return Promise.reject(new Error('Fail 1'));
+        } else if (callCount === 2) {
+          return Promise.reject(new Error('Fail 2'));
+        } else {
+          return Promise.resolve('success');
+        }
+      });
+      
+      ethers.providers.JsonRpcProvider.prototype.send = mockSend;
+      
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 2,
         initialRetryDelay: 100,
         retryJitter: false
       });
-      
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.send = jest.fn()
-        .mockRejectedValueOnce(new Error('Fail 1'))
-        .mockRejectedValueOnce(new Error('Fail 2'))
-        .mockResolvedValueOnce('success');
       
       const startTime = Date.now();
       await provider.send('test', []);
@@ -155,19 +181,22 @@ describe('RetryableProvider', () => {
     });
 
     test('should respect maxRetryDelay', async () => {
+      const mockSend = createMockSend((callCount) => {
+        if (callCount <= 3) {
+          return Promise.reject(new Error(`Fail ${callCount}`));
+        } else {
+          return Promise.resolve('success');
+        }
+      });
+      
+      ethers.providers.JsonRpcProvider.prototype.send = mockSend;
+      
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 3,
         initialRetryDelay: 500,
         maxRetryDelay: 600,
         retryJitter: false
       });
-      
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.send = jest.fn()
-        .mockRejectedValueOnce(new Error('Fail 1'))
-        .mockRejectedValueOnce(new Error('Fail 2'))  
-        .mockRejectedValueOnce(new Error('Fail 3'))
-        .mockResolvedValueOnce('success');
       
       const startTime = Date.now();
       await provider.send('test', []);
@@ -180,16 +209,15 @@ describe('RetryableProvider', () => {
     });
 
     test('should apply jitter when enabled', async () => {
+      ethers.providers.JsonRpcProvider.prototype.send = jest.fn()
+        .mockRejectedValueOnce(new Error('Fail'))
+        .mockResolvedValueOnce('success');
+      
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 1,
         initialRetryDelay: 1000,
         retryJitter: true
       });
-      
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.send = jest.fn()
-        .mockRejectedValueOnce(new Error('Fail'))
-        .mockResolvedValueOnce('success');
       
       const startTime = Date.now();
       await provider.send('test', []);
@@ -204,21 +232,20 @@ describe('RetryableProvider', () => {
 
   describe('perform method', () => {
     test('should retry perform operations', async () => {
+      ethers.providers.JsonRpcProvider.prototype.perform = jest.fn()
+        .mockRejectedValueOnce(new Error('Fail'))
+        .mockResolvedValueOnce('success');
+      
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 1,
         initialRetryDelay: 50,
         retryJitter: false
       });
       
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.perform = jest.fn()
-        .mockRejectedValueOnce(new Error('Fail'))
-        .mockResolvedValueOnce('success');
-      
       const result = await provider.perform('test', {});
       
       expect(result).toBe('success');
-      expect(parentProto.perform).toHaveBeenCalledTimes(2);
+      expect(ethers.providers.JsonRpcProvider.prototype.perform).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -257,13 +284,13 @@ describe('RetryableProvider', () => {
 
   describe('error handling', () => {
     test('should handle non-Error exceptions', async () => {
+      ethers.providers.JsonRpcProvider.prototype.send = jest.fn()
+        .mockRejectedValue('string error');
+      
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 0,
         initialRetryDelay: 50
       });
-      
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
-      parentProto.send = jest.fn().mockRejectedValue('string error');
       
       await expect(provider.send('test', []))
         .rejects
@@ -273,12 +300,12 @@ describe('RetryableProvider', () => {
 
   describe('concurrent requests', () => {
     test('should handle concurrent requests independently', async () => {
-      const provider = new RetryableProvider();
-      const parentProto = Object.getPrototypeOf(Object.getPrototypeOf(provider));
+      ethers.providers.JsonRpcProvider.prototype.send = jest.fn()
+        .mockImplementation((method) => {
+          return Promise.resolve(`result-${method}`);
+        });
       
-      parentProto.send = jest.fn().mockImplementation((method) => {
-        return Promise.resolve(`result-${method}`);
-      });
+      const provider = new RetryableProvider();
       
       const results = await Promise.all([
         provider.send('method1', []),
@@ -287,7 +314,7 @@ describe('RetryableProvider', () => {
       ]);
       
       expect(results).toEqual(['result-method1', 'result-method2', 'result-method3']);
-      expect(parentProto.send).toHaveBeenCalledTimes(3);
+      expect(ethers.providers.JsonRpcProvider.prototype.send).toHaveBeenCalledTimes(3);
     });
   });
 });
