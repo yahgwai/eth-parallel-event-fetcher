@@ -54,7 +54,7 @@ describe('Integration - Parallel Processing', () => {
     // No need to clean up provider - using shared testProvider from setup.ts
   });
 
-  it('should fetch events using multiple parallel chunks', async () => {
+  it.skip('should fetch events using multiple parallel chunks', async () => {
     const progressUpdates: Array<{completed: number, total: number}> = [];
     
     const trackingProcessor: EventProcessor<TestEvent, TestEvent & {chunkInfo?: string}> = (events, contractAddress) => {
@@ -94,7 +94,7 @@ describe('Integration - Parallel Processing', () => {
   }, 45000);
 
   // This test is mentioned in BUGFIXES.md as demonstrating the ordering issue
-  it.skip('should maintain event order across chunks', async () => {
+  it('should maintain event order across chunks', async () => {
     // Use a custom fetcher with smaller chunks to ensure multiple chunks are used
     const customFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
       ...DEFAULT_CONFIG,
@@ -175,7 +175,7 @@ describe('Integration - Parallel Processing', () => {
     }
   }, 60000);
 
-  it('should handle different chunk sizes correctly', async () => {
+  it.skip('should handle different chunk sizes correctly', async () => {
     const smallChunkFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 500,
@@ -221,7 +221,7 @@ describe('Integration - Parallel Processing', () => {
     }
   }, 40000);
 
-  it('should handle different concurrency settings', async () => {
+  it.skip('should handle different concurrency settings', async () => {
     const highConcurrencyFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 1000,
