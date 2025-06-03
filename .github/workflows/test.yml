@@ -44,3 +44,6 @@ jobs:
     - name: Run tests
       run: npm test
       timeout-minutes: 2
+
+    - name: Test completed
+      run: echo "Tests completed successfully!"
