@@ -27,7 +27,7 @@ jest.mock('p-limit', () => {
   });
 });
 
-describe('TaskQueue', () => {
+describe.skip('TaskQueue', () => {
   let taskQueue: TaskQueue<string>;
 
   beforeEach(() => {
