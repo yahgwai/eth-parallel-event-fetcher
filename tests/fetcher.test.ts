@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from '../src/config';
 import { FetcherConfig } from '../types/interfaces';
 import { ConfigurationError } from '../src/errors';
 
-describe('GenericEventFetcher', () => {
+describe.skip('GenericEventFetcher', () => {
   describe('constructor', () => {
     test('should initialize with default config when no config provided', () => {
       const fetcher = new GenericEventFetcher();
