@@ -10,7 +10,7 @@ interface TestEvent extends RawEvent {
   args: any;
 }
 
-describe.skip('Integration - Parallel Processing', () => {
+describe('Integration - Parallel Processing', () => {
   let fetcher: GenericEventFetcher<TestEvent, any>;
   let provider: ethers.providers.JsonRpcProvider;
   let usdcContract: ContractInterface;
@@ -50,6 +50,14 @@ describe.skip('Integration - Parallel Processing', () => {
         })) as ethers.Event[];
       }
     };
+  });
+
+  afterAll(async () => {
+    // Clean up provider connection
+    if (provider) {
+      provider.removeAllListeners();
+      provider.polling = false;
+    }
   });
 
   it('should fetch events using multiple parallel chunks', async () => {
