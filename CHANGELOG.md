@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.5](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.4...v1.2.5) (2025-06-04)
+
+
+### Documentation
+
+* consolidate changelog into single 1.2.4 release ([ed7e53b](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/ed7e53bbbe8589a6dbce3f4e9956b0ebaf8a97a2))
+
 ## [1.2.4](https://github.com/yahgwai/eth-parallel-event-fetcher) (2025-06-04)
 
 ### ⚠ BREAKING CHANGES
