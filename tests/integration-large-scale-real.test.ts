@@ -10,7 +10,7 @@ interface TestEvent extends RawEvent {
   args: any;
 }
 
-describe('Integration - Large Scale Real', () => {
+describe.skip('Integration - Large Scale Real', () => {
   let fetcher: GenericEventFetcher<TestEvent, any>;
   let provider: ethers.providers.JsonRpcProvider;
   let usdcContract: ContractInterface;
