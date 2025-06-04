@@ -19,7 +19,7 @@ jest.mock('p-limit', () => {
   });
 });
 
-describe.skip('Parallel Utils', () => {
+describe('Parallel Utils', () => {
   describe('createBlockRangeChunks', () => {
     test('should create correct chunks for block ranges', () => {
       const chunks = createBlockRangeChunks(100, 200, 50);
@@ -185,7 +185,7 @@ describe.skip('Parallel Utils', () => {
   });
 });
 
-describe.skip('Provider Utils', () => {
+describe('Provider Utils', () => {
   describe('createProvider', () => {
     test('should throw error when no URL provided', async () => {
       await expect(createProvider({})).rejects.toThrow(ProviderError);
@@ -200,7 +200,7 @@ describe.skip('Provider Utils', () => {
   });
 });
 
-describe.skip('Progress Utils', () => {
+describe('Progress Utils', () => {
   describe('ProgressTracker', () => {
     let logSpy: jest.Mock;
     let tracker: ProgressTracker;

@@ -6,7 +6,7 @@ import {
   validateConfig 
 } from '../src/config';
 
-describe.skip('Configuration System', () => {
+describe('Configuration System', () => {
   // Store original env vars to restore after tests
   const originalEnv = { ...process.env };
 

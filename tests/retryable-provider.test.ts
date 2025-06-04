@@ -2,7 +2,7 @@ import { RetryableProvider } from '../src/utils/retryable-provider';
 import { ProviderError, RateLimitError } from '../src/errors';
 import { ethers } from 'ethers';
 
-describe.skip('RetryableProvider', () => {
+describe('RetryableProvider', () => {
   let originalSend: any;
   let originalPerform: any;
 
