@@ -35,12 +35,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yahgwai/ethereum-parallel-fetcher.git"
+    "url": "git+https://github.com/yahgwai/eth-parallel-event-fetcher.git"
   },
   "bugs": {
-    "url": "https://github.com/yahgwai/ethereum-parallel-fetcher/issues"
+    "url": "https://github.com/yahgwai/eth-parallel-event-fetcher/issues"
   },
-  "homepage": "https://github.com/yahgwai/ethereum-parallel-fetcher#readme",
+  "homepage": "https://github.com/yahgwai/eth-parallel-event-fetcher#readme",
   "engines": {
     "node": ">=14.0.0"
   },
