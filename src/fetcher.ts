@@ -1,13 +1,10 @@
 import { ethers } from 'ethers';
 import { 
-  EventFetcher, 
   ContractInterface, 
-  EventProcessor, 
   EventFetcherOptions,
   FetcherConfig,
   ChunkFetchResult,
-  RawEvent,
-  ProcessedEvent
+  RawEvent
 } from '../types';
 import { executeInParallel, createBlockRangeChunks } from './utils/parallel';
 import { createConfig, validateConfig } from './config';
@@ -17,11 +14,9 @@ import { ConfigurationError, EventFetchError, ChunkTruncationError } from './err
  * Generic event fetcher implementation that can work with any Ethereum contract events
  */
 export class GenericEventFetcher<
-  TRawEvent extends RawEvent, 
-  TProcessedEvent = unknown, 
+  TRawEvent extends RawEvent = RawEvent, 
   TAddress extends string = string
-> 
-  implements EventFetcher<TRawEvent, TProcessedEvent, TAddress> {
+> {
 
   private config: Required<FetcherConfig>;
 
@@ -44,9 +39,8 @@ export class GenericEventFetcher<
   async fetchEvents(
     contract: ContractInterface<TAddress>,
     eventName: string,
-    processor: EventProcessor<TRawEvent, TProcessedEvent, TAddress>,
     options: EventFetcherOptions<TAddress>
-  ): Promise<TProcessedEvent[]> {
+  ): Promise<TRawEvent[]> {
     const {
       fromBlock,
       toBlock,
@@ -164,15 +158,12 @@ export class GenericEventFetcher<
       totalEvents += events.length;
     });
 
-    // Process raw events using the provided processor
-    const processedEvents = processor(allRawEvents, contractAddress);
-
     // Log completion
     if (this.config.showProgress) {
       console.log(`Completed fetching ${eventName} events. Found ${totalEvents} events across ${results.length} chunks.`);
     }
 
-    return processedEvents;
+    return allRawEvents;
   }
 
   /**

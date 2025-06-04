@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
-import { ContractInterface, EventProcessor, RawEvent } from '../types';
+import { ContractInterface, RawEvent } from '../types';
 
 interface TestEvent extends RawEvent {
   address: string;
@@ -51,12 +51,9 @@ describe('Integration - Basic Event Fetching', () => {
   });
 
   it('should fetch Transfer events from USDC contract', async () => {
-    const basicProcessor: EventProcessor<TestEvent, any> = (events) => events;
-    
     const events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      basicProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18500000,
@@ -77,7 +74,7 @@ describe('Integration - Basic Event Fetching', () => {
     expect(firstEvent.address.toLowerCase()).toBe(usdcContract.address.toLowerCase());
   }, 30000);
 
-  it('should process events with custom processor', async () => {
+  it('should transform events after fetching', async () => {
     interface TransferData {
       hash: string;
       block: number;
@@ -85,19 +82,9 @@ describe('Integration - Basic Event Fetching', () => {
       to: string;
     }
     
-    const customProcessor: EventProcessor<TestEvent, TransferData> = (events) => {
-      return events.map(event => ({
-        hash: event.transactionHash,
-        block: event.blockNumber,
-        from: event.topics[1],
-        to: event.topics[2]
-      }));
-    };
-
     const events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      customProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18500000,
@@ -105,11 +92,19 @@ describe('Integration - Basic Event Fetching', () => {
       }
     );
 
-    expect(events).toBeDefined();
-    expect(Array.isArray(events)).toBe(true);
-    expect(events.length).toBeGreaterThan(0);
+    // Transform events after fetching
+    const transformedEvents: TransferData[] = events.map(event => ({
+      hash: event.transactionHash,
+      block: event.blockNumber,
+      from: event.topics[1],
+      to: event.topics[2]
+    }));
+
+    expect(transformedEvents).toBeDefined();
+    expect(Array.isArray(transformedEvents)).toBe(true);
+    expect(transformedEvents.length).toBeGreaterThan(0);
     
-    const firstEvent = events[0];
+    const firstEvent = transformedEvents[0];
     expect(firstEvent).toHaveProperty('hash');
     expect(firstEvent).toHaveProperty('block');
     expect(firstEvent).toHaveProperty('from');
@@ -141,12 +136,9 @@ describe('Integration - Basic Event Fetching', () => {
       }
     };
     
-    const basicProcessor: EventProcessor<TestEvent, any> = (events) => events;
-    
     const events = await fetcher.fetchEvents(
       nonExistentContract,
       'Transfer',
-      basicProcessor,
       {
         contractAddress: nonExistentContract.address,
         fromBlock: 18500000,

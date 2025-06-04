@@ -33,27 +33,23 @@ const contract = new ethers.Contract(contractAddress, abi, provider);
 // Create fetcher with default configuration
 const fetcher = new GenericEventFetcher();
 
-// Define event processor
-const processor = (events: any[], contractAddress: string) => {
-  return events.map(event => ({
-    // Transform raw events to your desired format
-    blockNumber: event.blockNumber,
-    transactionHash: event.transactionHash,
-    args: event.args
-  }));
-};
-
 // Fetch events
 const events = await fetcher.fetchEvents(
   contract,
   'EventName',
-  processor,
   {
     fromBlock: 1000000,
     toBlock: 1010000,
     contractAddress: '0x...'
   }
 );
+
+// Process events as needed
+const processedEvents = events.map(event => ({
+  blockNumber: event.blockNumber,
+  transactionHash: event.transactionHash,
+  args: event.args
+}));
 ```
 
 ## Configuration
@@ -135,7 +131,7 @@ const DEFAULT_CONFIG = {
 #### Constructor
 
 ```typescript
-new GenericEventFetcher<TRawEvent, TProcessedEvent, TAddress>(config?: Partial<FetcherConfig>)
+new GenericEventFetcher<TRawEvent, TAddress>(config?: Partial<FetcherConfig>)
 ```
 
 #### Methods
@@ -146,15 +142,13 @@ new GenericEventFetcher<TRawEvent, TProcessedEvent, TAddress>(config?: Partial<F
 async fetchEvents(
   contract: ContractInterface<TAddress>,
   eventName: string,
-  processor: EventProcessor<TRawEvent, TProcessedEvent, TAddress>,
   options: EventFetcherOptions<TAddress>
-): Promise<TProcessedEvent[]>
+): Promise<TRawEvent[]>
 ```
 
 **Parameters:**
 - `contract`: Ethers contract instance with event filters
 - `eventName`: Name of the event to fetch (must match contract ABI)
-- `processor`: Function to transform raw events to desired format
 - `options`: Fetch options including block range and contract address
 
 ##### updateConfig()
@@ -175,14 +169,6 @@ Get the current configuration.
 
 ### Types
 
-#### EventProcessor
-
-```typescript
-type EventProcessor<TRawEvent, TProcessedEvent, TAddress = string> = (
-  events: TRawEvent[],
-  contractAddress: TAddress
-) => TProcessedEvent[];
-```
 
 #### EventFetcherOptions
 
@@ -211,14 +197,10 @@ const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 const contract = new ethers.Contract(ADDRESS, ABI, provider);
 const fetcher = new GenericEventFetcher({ concurrency: 8 });
 
-// Simple processor
-const processor = (events, contractAddress) => events;
-
 // Fetch events
 const events = await fetcher.fetchEvents(
   contract,
   'Transfer',
-  processor,
   {
     fromBlock: 18000000,
     toBlock: 18100000,
@@ -232,25 +214,29 @@ console.log(`Found ${events.length} Transfer events`);
 ### Advanced Event Processing
 
 ```typescript
-// Custom event processor
-const transferProcessor = (events: TransferEvent[], contractAddress: string) => {
-  return events.map(event => ({
-    from: event.args.from,
-    to: event.args.to,
-    value: ethers.utils.formatEther(event.args.value),
-    blockNumber: event.blockNumber,
-    transactionHash: event.transactionHash,
-    contractAddress,
-    timestamp: null // Will be populated separately if needed
-  }));
-};
-
 // Fetch with progress tracking
-const transfers = await fetcher.fetchEvents(
+const events = await fetcher.fetchEvents(
   contract,
   'Transfer',
-  transferProcessor,
   {
+    fromBlock: 18000000,
+    toBlock: 18100000,
+    contractAddress: ADDRESS,
+    onProgress: (completed, total) => {
+      console.log(`Progress: ${completed}/${total} chunks`);
+    }
+  }
+);
+
+// Process events as needed
+const transfers = events.map(event => ({
+  from: event.args.from,
+  to: event.args.to,
+  value: ethers.utils.formatEther(event.args.value),
+  blockNumber: event.blockNumber,
+  transactionHash: event.transactionHash,
+  timestamp: null // Will be populated separately if needed
+}));
     fromBlock: startBlock,
     toBlock: endBlock,
     contractAddress: TOKEN_ADDRESS,
@@ -315,13 +301,13 @@ const processedEvents = await typedFetcher.fetchEvents(
 
 ```typescript
 try {
-  const events = await fetcher.fetchEvents(contract, 'EventName', processor, options);
+  const events = await fetcher.fetchEvents(contract, 'EventName', options);
 } catch (error) {
   if (error.message.includes('truncation detected')) {
     console.log('Try reducing chunk size');
     // Retry with smaller chunks
     const smallerFetcher = new GenericEventFetcher({ chunkSize: 1000 });
-    const events = await smallerFetcher.fetchEvents(contract, 'EventName', processor, options);
+    const events = await smallerFetcher.fetchEvents(contract, 'EventName', options);
   } else {
     console.error('Fetch failed:', error);
   }
@@ -428,7 +414,7 @@ The test suite is organized into several categories:
 - **connectivity.test.ts** (3 tests): Blockchain connection testing
 - **integration-basic.test.ts** (3 tests): Basic event fetching
 - **integration-parallel.test.ts** (4 tests): Parallel processing
-- **integration-processor.test.ts** (3 tests): Custom event processors
+- **integration-processor.test.ts** (3 tests): Event processing patterns
 
 #### Error Handling & Large-Scale Tests
 - **error-handling-simple.test.ts** (3 tests): Configuration validation
@@ -438,7 +424,7 @@ The test suite is organized into several categories:
 
 - **Real blockchain data**: Tests use actual USDC Transfer events
 - **Parallel processing verification**: Tests verify concurrent chunk processing
-- **Custom processor testing**: Validates event transformation capabilities
+- **Event processing patterns**: Demonstrates various ways to transform fetched events
 - **Error scenario coverage**: Tests configuration validation and edge cases
 - **Large-scale validation**: Confirms library handles production workloads (>500k blocks)
 

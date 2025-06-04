@@ -27,24 +27,6 @@ export interface RawEvent<TArgs = Record<string, unknown>> {
   transactionHash: string;
 }
 
-/**
- * Generic processed event with metadata
- */
-export interface ProcessedEvent<TEventData = unknown, TAddress extends string = string> {
-  blockNumber: number;
-  blockHash: string;
-  transactionHash: string;
-  contractAddress: TAddress;
-  eventData: TEventData;
-}
-
-/**
- * Generic event processor function type
- */
-export type EventProcessor<TRawEvent extends RawEvent, TProcessedEvent = unknown, TAddress extends string = string> = (
-  events: TRawEvent[],
-  contractAddress: TAddress
-) => TProcessedEvent[];
 
 /**
  * Generic contract interface
@@ -106,16 +88,14 @@ export interface ChunkFetchResult<TEvent extends RawEvent = RawEvent> {
  * Generic event fetcher interface
  */
 export interface EventFetcher<
-  TRawEvent extends RawEvent, 
-  TProcessedEvent = unknown, 
+  TRawEvent extends RawEvent = RawEvent, 
   TAddress extends string = string
 > {
   fetchEvents(
     contract: ContractInterface<TAddress>,
     eventName: string,
-    processor: EventProcessor<TRawEvent, TProcessedEvent, TAddress>,
     options: EventFetcherOptions<TAddress>
-  ): Promise<TProcessedEvent[]>;
+  ): Promise<TRawEvent[]>;
 }
 
 /**
