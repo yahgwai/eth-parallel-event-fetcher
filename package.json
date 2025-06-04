@@ -1,5 +1,5 @@
 {
-  "name": "ethereum-parallel-fetcher",
+  "name": "eth-parallel-event-fetcher",
   "version": "1.2.1",
   "description": "Parallel event fetching library for Ethereum contracts",
   "main": "dist/src/index.js",
