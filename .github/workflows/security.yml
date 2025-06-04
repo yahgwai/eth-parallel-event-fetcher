@@ -28,16 +28,17 @@ jobs:
     - name: NPM Audit
       run: npm audit --audit-level=moderate
     
-    # Build the project (required for CodeQL)
-    - name: Build
-      run: npm run build
-    
-    # Run CodeQL analysis
+    # Initialize CodeQL before build
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: javascript
     
+    # Build the project (CodeQL will analyze during build)
+    - name: Build
+      run: npm run build
+    
+    # Perform CodeQL analysis
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
     
