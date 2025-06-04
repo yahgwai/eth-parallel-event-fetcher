@@ -55,7 +55,6 @@ describe('Integration - Large Scale Real', () => {
   });
 
   it('should demonstrate large-scale processing capability with realistic event density', async () => {
-    const basicProcessor: EventProcessor<TestEvent, TestEvent> = (events) => events;
     let totalEvents = 0;
     let totalBlocks = 0;
 
@@ -67,7 +66,6 @@ describe('Integration - Large Scale Real', () => {
     const step1Events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      basicProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18500000,
@@ -87,7 +85,6 @@ describe('Integration - Large Scale Real', () => {
     const step2Events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      basicProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18501000,

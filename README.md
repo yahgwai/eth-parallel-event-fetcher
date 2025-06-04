@@ -4,13 +4,13 @@ A TypeScript library for parallel fetching of Ethereum contract events with conf
 
 ## Features
 
-- 🚀 **Parallel Processing**: Fetch events across multiple block ranges simultaneously
-- 🔄 **Automatic Retry Logic**: Built-in retry mechanism with exponential backoff
-- 📊 **Progress Tracking**: Real-time progress reporting and callbacks
-- 🎯 **Generic Interfaces**: Works with any Ethereum contract events
-- ⚙️ **Configurable**: Extensive configuration options for performance tuning
-- 🛡️ **TypeScript Support**: Full type safety and intellisense
-- 🌍 **Environment Variables**: Configuration via environment variables
+- **Parallel Processing**: Fetch events across multiple block ranges simultaneously
+- **Automatic Retry Logic**: Built-in retry mechanism with exponential backoff
+- **Progress Tracking**: Real-time progress reporting and callbacks
+- **Generic Interfaces**: Works with any Ethereum contract events
+- **Configurable**: Extensive configuration options for performance tuning
+- **TypeScript Support**: Full type safety and intellisense
+- **Environment Variables**: Configuration via environment variables
 
 ## Installation
 
@@ -237,19 +237,9 @@ const transfers = events.map(event => ({
   transactionHash: event.transactionHash,
   timestamp: null // Will be populated separately if needed
 }));
-    fromBlock: startBlock,
-    toBlock: endBlock,
-    contractAddress: TOKEN_ADDRESS,
-    onProgress: (completed, total, currentChunk) => {
-      const percentage = (completed / total * 100).toFixed(1);
-      console.log(`Progress: ${percentage}% (${completed}/${total} chunks)`);
-      console.log(`Current chunk: blocks ${currentChunk[0]}-${currentChunk[1]}`);
-    }
-  }
-);
 ```
 
-### Multiple Contract Types
+### Working with Custom Event Types
 
 ```typescript
 // Type-safe usage with custom interfaces
@@ -261,40 +251,32 @@ interface MyContract {
   queryFilter(filter: ethers.EventFilter, fromBlock?: number, toBlock?: number): Promise<ethers.Event[]>;
 }
 
-interface MyEvent {
+interface MyEvent extends RawEvent {
   args: {
     param1: string;
     param2: number;
   };
-  blockNumber: number;
-  transactionHash: string;
 }
 
-interface ProcessedMyEvent {
-  param1: string;
-  param2: number;
-  blockNumber: number;
-  txHash: string;
-  contractAddress: string;
-}
-
-const myEventProcessor = (events: MyEvent[], contractAddress: string): ProcessedMyEvent[] => {
-  return events.map(event => ({
-    param1: event.args.param1,
-    param2: event.args.param2,
-    blockNumber: event.blockNumber,
-    txHash: event.transactionHash,
-    contractAddress
-  }));
-};
-
-const typedFetcher = new GenericEventFetcher<MyEvent, ProcessedMyEvent, string>();
-const processedEvents = await typedFetcher.fetchEvents(
+const typedFetcher = new GenericEventFetcher<MyEvent, string>();
+const events = await typedFetcher.fetchEvents(
   contract as MyContract,
   'MyEvent',
-  myEventProcessor,
-  options
+  {
+    fromBlock: 18000000,
+    toBlock: 18100000,
+    contractAddress: CONTRACT_ADDRESS
+  }
 );
+
+// Process events after fetching
+const processedEvents = events.map(event => ({
+  param1: event.args.param1,
+  param2: event.args.param2,
+  blockNumber: event.blockNumber,
+  txHash: event.transactionHash,
+  contractAddress: CONTRACT_ADDRESS
+}));
 ```
 
 ### Error Handling
@@ -414,7 +396,7 @@ The test suite is organized into several categories:
 - **connectivity.test.ts** (3 tests): Blockchain connection testing
 - **integration-basic.test.ts** (3 tests): Basic event fetching
 - **integration-parallel.test.ts** (4 tests): Parallel processing
-- **integration-processor.test.ts** (3 tests): Event processing patterns
+- **integration-processor.test.ts** (3 tests): Event transformation patterns
 
 #### Error Handling & Large-Scale Tests
 - **error-handling-simple.test.ts** (3 tests): Configuration validation
