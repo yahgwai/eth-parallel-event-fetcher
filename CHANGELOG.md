@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.2](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.1.1...v1.1.2) (2025-06-04)
+
+
+### Code Refactoring
+
+* rename release.sh to publish.sh for clarity ([ae673f8](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/ae673f8de8b8309c487fc0ed1b32187d31a8e3ae))
+
 ### [1.1.1](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.1.0...v1.1.1) (2025-06-04)
 
 
