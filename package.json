@@ -14,11 +14,12 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
     "clean": "rm -rf dist",
-    "release": "npm test && npm run clean && standard-version && ./publish.sh",
-    "release:patch": "npm test && npm run clean && standard-version --release-as patch && ./publish.sh",
-    "release:minor": "npm test && npm run clean && standard-version --release-as minor && ./publish.sh",
-    "release:major": "npm test && npm run clean && standard-version --release-as major && ./publish.sh",
-    "release:first": "npm test && npm run clean && standard-version --first-release && ./publish.sh"
+    "prerelease": "./scripts/pre-release-check.sh",
+    "release": "npm run prerelease && npm test && npm run clean && standard-version && ./publish.sh",
+    "release:patch": "npm run prerelease && npm test && npm run clean && standard-version --release-as patch && ./publish.sh",
+    "release:minor": "npm run prerelease && npm test && npm run clean && standard-version --release-as minor && ./publish.sh",
+    "release:major": "npm run prerelease && npm test && npm run clean && standard-version --release-as major && ./publish.sh",
+    "release:first": "npm run prerelease && npm test && npm run clean && standard-version --first-release && ./publish.sh"
   },
   "keywords": [
     "ethereum",

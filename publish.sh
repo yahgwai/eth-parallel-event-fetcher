@@ -6,6 +6,22 @@
 
 echo "Publishing release..."
 
+# Check for uncommitted changes
+if ! git diff-index --quiet HEAD --; then
+    echo "Error: There are uncommitted changes in the repository."
+    echo "Please commit or stash all changes before releasing."
+    git status --short
+    exit 1
+fi
+
+# Check if we're on main branch
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "main" ]; then
+    echo "Error: Releases must be done from the main branch."
+    echo "Current branch: $CURRENT_BRANCH"
+    exit 1
+fi
+
 # Get the new version
 VERSION=$(node -p "require('./package.json').version")
 
