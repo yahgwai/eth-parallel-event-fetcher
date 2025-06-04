@@ -1,0 +1,59 @@
+# Source files (TypeScript)
+src/
+types/
+
+# Tests
+tests/
+*.test.js
+*.test.d.ts
+jest.config.js
+
+# Development files
+tsconfig.json
+hardhat.config.js
+.gitignore
+.npmignore
+
+# Environment files
+.env
+.env.*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Hardhat
+artifacts/
+cache/
+typechain/
+typechain-types/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dev containers
+.devcontainer/
+
+# Claude
+CLAUDE.md
+.claude
+
+# Misc
+.tmp/
+temp/
+TODO.md
