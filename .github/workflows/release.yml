@@ -2,18 +2,33 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (only for manual triggers)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - auto
 
 jobs:
   release:
-    name: Release to NPM
+    name: Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Need full history for standard-version
+        token: ${{ secrets.GITHUB_TOKEN }}
     
     - uses: actions/setup-node@v4
       with:
@@ -21,39 +36,76 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
         cache: 'npm'
     
+    - name: Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+    
     - run: npm ci
     
-    - run: npm run build
-    
+    # Run linting and type checking
     - run: npm run lint
-    
     - run: npm run typecheck
     
+    # Run tests
     - run: npm test
     
-    # Extract version from tag
+    # Determine release type
+    - name: Determine release type
+      id: release_type
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          # Manual trigger - use input
+          RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+        else
+          # Automatic trigger - let standard-version decide based on commits
+          RELEASE_TYPE="auto"
+        fi
+        echo "RELEASE_TYPE=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+    
+    # Run standard-version to bump version and generate changelog
+    - name: Bump version and generate changelog
+      run: |
+        RELEASE_TYPE="${{ steps.release_type.outputs.RELEASE_TYPE }}"
+        if [ "$RELEASE_TYPE" == "auto" ]; then
+          npx standard-version
+        else
+          npx standard-version --release-as $RELEASE_TYPE
+        fi
+    
+    # Build the project (after version bump so dist has correct version)
+    - run: npm run build
+    
+    # Get the new version
     - name: Get version
       id: version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
     
-    # Verify package.json version matches tag
-    - name: Check version match
+    # Extract release notes from CHANGELOG.md
+    - name: Extract release notes
       run: |
-        PACKAGE_VERSION=$(node -p "require('./package.json').version")
-        if [ "$PACKAGE_VERSION" != "${{ steps.version.outputs.VERSION }}" ]; then
-          echo "Tag version (${{ steps.version.outputs.VERSION }}) doesn't match package.json version ($PACKAGE_VERSION)"
-          exit 1
-        fi
+        VERSION="${{ steps.version.outputs.VERSION }}"
+        # Extract content between version header and next header
+        NOTES=$(awk '/^## \['"$VERSION"'\]/ {flag=1; next} /^##/ && flag {exit} flag' CHANGELOG.md)
+        
+        # Save to file to handle multi-line content properly
+        echo "$NOTES" > release_notes.md
+    
+    # Push commits and tags
+    - name: Push changes
+      run: git push --follow-tags origin main
+    
+    # Create GitHub release using gh CLI (matches manual process)
+    - name: Create GitHub Release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        VERSION="${{ steps.version.outputs.VERSION }}"
+        gh release create "v$VERSION" \
+          --title "v$VERSION" \
+          --notes-file release_notes.md
     
     # Publish to NPM with provenance
     - run: npm publish --provenance --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-    
-    # Create GitHub Release
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        generate_release_notes: true
-        body: |
-          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
