@@ -54,7 +54,7 @@ describe('Integration - Parallel Processing', () => {
     // No need to clean up provider - using shared testProvider from setup.ts
   });
 
-  it.skip('should fetch events using multiple parallel chunks', async () => {
+  it('should fetch events using multiple parallel chunks', async () => {
     const progressUpdates: Array<{completed: number, total: number}> = [];
     
     const trackingProcessor: EventProcessor<TestEvent, TestEvent & {chunkInfo?: string}> = (events, contractAddress) => {
@@ -140,7 +140,7 @@ describe('Integration - Parallel Processing', () => {
     expect(eventsByBlock).toEqual(sortedEventsByBlock);
   }, 60000);
 
-  it.skip('should handle different chunk sizes correctly', async () => {
+  it('should handle different chunk sizes correctly', async () => {
     const smallChunkFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 500,
@@ -186,7 +186,7 @@ describe('Integration - Parallel Processing', () => {
     }
   }, 40000);
 
-  it.skip('should handle different concurrency settings', async () => {
+  it('should handle different concurrency settings', async () => {
     const highConcurrencyFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 1000,

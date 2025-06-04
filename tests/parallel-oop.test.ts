@@ -27,7 +27,7 @@ jest.mock('p-limit', () => {
   });
 });
 
-describe.skip('TaskQueue', () => {
+describe('TaskQueue', () => {
   let taskQueue: TaskQueue<string>;
 
   beforeEach(() => {
@@ -98,7 +98,7 @@ describe.skip('TaskQueue', () => {
   });
 });
 
-describe.skip('ParallelExecutor', () => {
+describe('ParallelExecutor', () => {
   let executor: ParallelExecutor<string>;
   let mockTasks: TaskFunction<string>[];
   let onProgressMock: jest.Mock;
@@ -335,7 +335,7 @@ describe.skip('ParallelExecutor', () => {
   });
 });
 
-describe.skip('Integration with executeInParallel', () => {
+describe('Integration with executeInParallel', () => {
   test('should maintain backward compatibility', async () => {
     const { executeInParallel } = await import('../src/utils/parallel');
     

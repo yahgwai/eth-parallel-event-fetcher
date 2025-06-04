@@ -1,7 +1,7 @@
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG, validateConfig } from '../src/config';
 
-describe.skip('Error Handling - Simple Tests', () => {
+describe('Error Handling - Simple Tests', () => {
   it('should validate configuration errors correctly', () => {
     expect(() => {
       new GenericEventFetcher({
