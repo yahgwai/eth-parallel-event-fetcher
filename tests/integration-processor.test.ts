@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
-import { ContractInterface, EventProcessor, RawEvent } from '../types';
+import { ContractInterface, RawEvent } from '../types';
 
 interface TestEvent extends RawEvent {
   address: string;
@@ -10,7 +10,7 @@ interface TestEvent extends RawEvent {
   args: any;
 }
 
-describe('Integration - Custom Event Processors', () => {
+describe('Integration - Custom Event Processing', () => {
   let fetcher: GenericEventFetcher<TestEvent, any>;
   let provider: ethers.providers.JsonRpcProvider;
   let usdcContract: ContractInterface;
@@ -59,22 +59,10 @@ describe('Integration - Custom Event Processors', () => {
     };
   });
 
-  test('custom processor transforms Transfer events correctly', async () => {
-    const customProcessor: EventProcessor<TestEvent, any> = (events) => {
-      return events.map(event => ({
-        txHash: event.transactionHash,
-        blockNum: event.blockNumber,
-        from: event.args[0],
-        to: event.args[1],
-        amount: event.args[2].toString(),
-        eventType: 'USDC_Transfer'
-      }));
-    };
-
+  test('custom processing transforms Transfer events correctly', async () => {
     const events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      customProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18500000,
@@ -82,10 +70,20 @@ describe('Integration - Custom Event Processors', () => {
       }
     );
 
-    expect(Array.isArray(events)).toBe(true);
+    // Apply custom transformation after fetching
+    const processedEvents = events.map(event => ({
+      txHash: event.transactionHash,
+      blockNum: event.blockNumber,
+      from: event.args[0],
+      to: event.args[1],
+      amount: event.args[2].toString(),
+      eventType: 'USDC_Transfer'
+    }));
+
+    expect(Array.isArray(processedEvents)).toBe(true);
     
-    if (events.length > 0) {
-      const event = events[0];
+    if (processedEvents.length > 0) {
+      const event = processedEvents[0];
       expect(event).toHaveProperty('txHash');
       expect(event).toHaveProperty('blockNum');
       expect(event).toHaveProperty('from');
@@ -101,24 +99,10 @@ describe('Integration - Custom Event Processors', () => {
     }
   }, 30000);
 
-  test('processor receives all event properties', async () => {
-    let receivedEvents: any[] = [];
-    
-    const inspectorProcessor: EventProcessor<TestEvent, any> = (events) => {
-      receivedEvents = events;
-      return events.map(event => ({
-        hasArgs: Array.isArray(event.args),
-        hasBlockNumber: typeof event.blockNumber === 'number',
-        hasTransactionHash: typeof event.transactionHash === 'string',
-        hasAddress: typeof event.address === 'string',
-        hasTopics: Array.isArray(event.topics)
-      }));
-    };
-
-    const results = await fetcher.fetchEvents(
+  test('fetched events have all expected properties', async () => {
+    const events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      inspectorProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18500000,
@@ -126,8 +110,17 @@ describe('Integration - Custom Event Processors', () => {
       }
     );
 
-    if (receivedEvents.length > 0) {
-      const originalEvent = receivedEvents[0];
+    // Verify event properties
+    const results = events.map(event => ({
+      hasArgs: Array.isArray(event.args),
+      hasBlockNumber: typeof event.blockNumber === 'number',
+      hasTransactionHash: typeof event.transactionHash === 'string',
+      hasAddress: typeof event.address === 'string',
+      hasTopics: Array.isArray(event.topics)
+    }));
+
+    if (events.length > 0) {
+      const originalEvent = events[0];
       expect(originalEvent).toHaveProperty('args');
       expect(originalEvent).toHaveProperty('blockNumber');
       expect(originalEvent).toHaveProperty('transactionHash');
@@ -146,33 +139,31 @@ describe('Integration - Custom Event Processors', () => {
     }
   }, 30000);
 
-  test('processor can aggregate and summarize events', async () => {
-    const aggregatorProcessor: EventProcessor<TestEvent, any> = (events) => {
-      const summary = {
-        totalEvents: events.length,
-        totalAmount: events.reduce((sum, event) => {
-          return sum + BigInt(event.args[2].toString());
-        }, BigInt(0)).toString(),
-        uniqueRecipients: new Set(events.map(event => event.args[1])).size,
-        blockRange: events.length > 0 ? {
-          min: Math.min(...events.map(e => e.blockNumber)),
-          max: Math.max(...events.map(e => e.blockNumber))
-        } : null
-      };
-
-      return [summary];
-    };
-
-    const results = await fetcher.fetchEvents(
+  test('events can be aggregated and summarized after fetching', async () => {
+    const events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      aggregatorProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18500000,
         toBlock: 18500020
       }
     );
+
+    // Aggregate events after fetching
+    const summary = {
+      totalEvents: events.length,
+      totalAmount: events.reduce((sum, event) => {
+        return sum + BigInt(event.args[2].toString());
+      }, BigInt(0)).toString(),
+      uniqueRecipients: new Set(events.map(event => event.args[1])).size,
+      blockRange: events.length > 0 ? {
+        min: Math.min(...events.map(e => e.blockNumber)),
+        max: Math.max(...events.map(e => e.blockNumber))
+      } : null
+    };
+
+    const results = [summary];
 
     expect(results).toHaveLength(1);
     const summary = results[0];
@@ -186,7 +177,7 @@ describe('Integration - Custom Event Processors', () => {
     expect(typeof summary.totalAmount).toBe('string');
     expect(typeof summary.uniqueRecipients).toBe('number');
     
-    if (summary.blockRange) {
+    if (summary && summary.blockRange) {
       expect(typeof summary.blockRange.min).toBe('number');
       expect(typeof summary.blockRange.max).toBe('number');
       expect(summary.blockRange.min).toBeLessThanOrEqual(summary.blockRange.max);

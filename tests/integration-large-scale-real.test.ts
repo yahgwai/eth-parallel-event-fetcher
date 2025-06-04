@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
-import { ContractInterface, EventProcessor, RawEvent } from '../types';
+import { ContractInterface, RawEvent } from '../types';
 
 interface TestEvent extends RawEvent {
   address: string;
@@ -11,7 +11,7 @@ interface TestEvent extends RawEvent {
 }
 
 describe('Integration - Large Scale Real', () => {
-  let fetcher: GenericEventFetcher<TestEvent, any>;
+  let fetcher: GenericEventFetcher<TestEvent>;
   let provider: ethers.providers.JsonRpcProvider;
   let usdcContract: ContractInterface;
 
@@ -27,7 +27,7 @@ describe('Integration - Large Scale Real', () => {
       initialRetryDelay: 500
     };
 
-    fetcher = new GenericEventFetcher(config);
+    fetcher = new GenericEventFetcher<TestEvent>(config);
     provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
     
     const usdcAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
@@ -106,7 +106,6 @@ describe('Integration - Large Scale Real', () => {
     const step3Events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      basicProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18511000,
@@ -128,7 +127,6 @@ describe('Integration - Large Scale Real', () => {
     const step4Events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      basicProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18561000,

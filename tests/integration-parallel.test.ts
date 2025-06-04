@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
-import { ContractInterface, EventProcessor, RawEvent } from '../types';
+import { ContractInterface, RawEvent } from '../types';
 import { testProvider } from './setup';
 
 interface TestEvent extends RawEvent {
@@ -12,7 +12,7 @@ interface TestEvent extends RawEvent {
 }
 
 describe('Integration - Parallel Processing', () => {
-  let fetcher: GenericEventFetcher<TestEvent, any>;
+  let fetcher: GenericEventFetcher<TestEvent>;
   let usdcContract: ContractInterface;
 
   beforeAll(async () => {
@@ -57,17 +57,9 @@ describe('Integration - Parallel Processing', () => {
   it('should fetch events using multiple parallel chunks', async () => {
     const progressUpdates: Array<{completed: number, total: number}> = [];
     
-    const trackingProcessor: EventProcessor<TestEvent, TestEvent & {chunkInfo?: string}> = (events, contractAddress) => {
-      return events.map(event => ({
-        ...event,
-        chunkInfo: `Processed from ${contractAddress}`
-      }));
-    };
-
     const events = await fetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      trackingProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18500000,
@@ -85,7 +77,13 @@ describe('Integration - Parallel Processing', () => {
     expect(progressUpdates.length).toBeGreaterThan(1);
     expect(progressUpdates[progressUpdates.length - 1].completed).toBe(progressUpdates[progressUpdates.length - 1].total);
 
-    const firstEvent = events[0];
+    // Transform events after fetching if needed
+    const processedEvents = events.map(event => ({
+      ...event,
+      chunkInfo: `Processed from ${usdcContract.address}`
+    }));
+
+    const firstEvent = processedEvents[0];
     expect(firstEvent).toHaveProperty('address');
     expect(firstEvent).toHaveProperty('blockNumber');
     expect(firstEvent).toHaveProperty('transactionHash');
@@ -96,30 +94,16 @@ describe('Integration - Parallel Processing', () => {
   // This test is mentioned in BUGFIXES.md as demonstrating the ordering issue
   it('should maintain event order across chunks', async () => {
     // Use a custom fetcher with smaller chunks to ensure multiple chunks are used
-    const customFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
+    const customFetcher = new GenericEventFetcher<TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 100,    // 10k blocks / 100 = 100 chunks (many chunks to test ordering across chunks)
       concurrency: 10,   // High concurrency to increase chance of out-of-order completion
       showProgress: false // No progress output - this might be causing the hang
     });
 
-    // Track processor invocations
-    let processorCallCount = 0;
-    let totalEventsProcessed = 0;
-    
-    const trackingProcessor: EventProcessor<TestEvent, TestEvent> = (events, contractAddress) => {
-      processorCallCount++;
-      totalEventsProcessed = events.length;
-      
-      // Processor is called ONCE with ALL events from all chunks combined
-      // Not once per chunk - just once per fetch
-      return events;
-    };
-
     const events = await customFetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      trackingProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18000000,  // Known range with many events (59k+)
@@ -127,9 +111,7 @@ describe('Integration - Parallel Processing', () => {
       }
     );
 
-    // Verify processor was called exactly once with all events
-    expect(processorCallCount).toBe(1);
-    expect(totalEventsProcessed).toBe(events.length);
+    // Events are now returned directly
     expect(events.length).toBeGreaterThan(100); // Should have many events
     
     // Check if events are in chronological order
@@ -141,25 +123,22 @@ describe('Integration - Parallel Processing', () => {
   }, 60000);
 
   it('should handle different chunk sizes correctly', async () => {
-    const smallChunkFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
+    const smallChunkFetcher = new GenericEventFetcher<TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 500,
       concurrency: 2
     });
 
-    const largeChunkFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
+    const largeChunkFetcher = new GenericEventFetcher<TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 2000,
       concurrency: 2
     });
 
-    const basicProcessor: EventProcessor<TestEvent, TestEvent> = (events) => events;
-
     const [smallChunkEvents, largeChunkEvents] = await Promise.all([
       smallChunkFetcher.fetchEvents(
         usdcContract,
         'Transfer',
-        basicProcessor,
         {
           contractAddress: usdcContract.address,
           fromBlock: 18500000,
@@ -169,7 +148,6 @@ describe('Integration - Parallel Processing', () => {
       largeChunkFetcher.fetchEvents(
         usdcContract,
         'Transfer',
-        basicProcessor,
         {
           contractAddress: usdcContract.address,
           fromBlock: 18500000,
@@ -187,21 +165,19 @@ describe('Integration - Parallel Processing', () => {
   }, 40000);
 
   it('should handle different concurrency settings', async () => {
-    const highConcurrencyFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
+    const highConcurrencyFetcher = new GenericEventFetcher<TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 1000,
       concurrency: 5,
       showProgress: true
     });
 
-    const lowConcurrencyFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
+    const lowConcurrencyFetcher = new GenericEventFetcher<TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 1000,
       concurrency: 1,
       showProgress: true
     });
-
-    const basicProcessor: EventProcessor<TestEvent, TestEvent> = (events) => events;
 
     const blockRange = { fromBlock: 18500000, toBlock: 18503000 };
 
@@ -209,7 +185,6 @@ describe('Integration - Parallel Processing', () => {
       highConcurrencyFetcher.fetchEvents(
         usdcContract,
         'Transfer',
-        basicProcessor,
         {
           contractAddress: usdcContract.address,
           ...blockRange
@@ -218,7 +193,6 @@ describe('Integration - Parallel Processing', () => {
       lowConcurrencyFetcher.fetchEvents(
         usdcContract,
         'Transfer',
-        basicProcessor,
         {
           contractAddress: usdcContract.address,
           ...blockRange
@@ -261,49 +235,29 @@ describe('Integration - Event Order Test Isolated', () => {
 
   it('should maintain event order across chunks', async () => {
     // Final: Original parameters - 10000 blocks, chunkSize 100, concurrency 10 (100 chunks, 10 parallel)
-    const customFetcher = new GenericEventFetcher<TestEvent, TestEvent>({
+    const customFetcher = new GenericEventFetcher<TestEvent>({
       ...DEFAULT_CONFIG,
       chunkSize: 100,     // 100 chunks for 10000 blocks
       concurrency: 10,    // 10 parallel
       showProgress: false // No progress output
     });
 
-    // Track processor invocations
-    let processorCallCount = 0;
-    let totalEventsProcessed = 0;
-    
-    const trackingProcessor: EventProcessor<TestEvent, TestEvent> = (events, contractAddress) => {
-      processorCallCount++;
-      totalEventsProcessed = events.length;
-      
-      // Processor is called ONCE with ALL events from all chunks combined
-      // Not once per chunk - just once per fetch
-      return events;
-    };
-
     const events = await customFetcher.fetchEvents(
       usdcContract,
       'Transfer',
-      trackingProcessor,
       {
         contractAddress: usdcContract.address,
         fromBlock: 18000000,  // Original start block
         toBlock: 18009999     // 10000 blocks - Final test
       }
     );
-
-    // Verify processor was called exactly once
-    expect(processorCallCount).toBe(1);
-    expect(totalEventsProcessed).toBe(events.length);
     
     // Check basic event properties
     expect(events).toBeDefined();
     expect(Array.isArray(events)).toBe(true);
     expect(events.length).toBeGreaterThan(0);
     
-    // Despite processing 100 chunks in parallel, processor is called once with all events
-    console.log(`Processor called ${processorCallCount} time(s) with ${totalEventsProcessed} total events`);
-    console.log(`Events fetched from 100 chunks but processor called once`);
+    // Events from all 100 chunks are now combined and returned directly
     
     // Check if events are in chronological order
     const eventsByBlock = events.map(e => e.blockNumber);
