@@ -85,8 +85,8 @@ jobs:
     - name: Extract release notes
       run: |
         VERSION="${{ steps.version.outputs.VERSION }}"
-        # Extract content between version header and next header
-        NOTES=$(awk '/^## \['"$VERSION"'\]/ {flag=1; next} /^##/ && flag {exit} flag' CHANGELOG.md)
+        # Extract content between version header and next header (handles both ## and ###)
+        NOTES=$(awk '/^##+ \['"$VERSION"'\]/ {flag=1; next} /^##/ && flag {exit} flag' CHANGELOG.md)
         
         # Save to file to handle multi-line content properly
         echo "$NOTES" > release_notes.md
