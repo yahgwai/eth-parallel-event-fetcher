@@ -8,7 +8,11 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "jest --forceExit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "release": "./release.sh",
+    "release:patch": "./release.sh patch",
+    "release:minor": "./release.sh minor",
+    "release:major": "./release.sh major"
   },
   "keywords": [
     "ethereum",
