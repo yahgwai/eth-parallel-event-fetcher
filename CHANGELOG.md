@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.4](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.1.3...v1.1.4) (2025-06-04)
+
+
+### Bug Fixes
+
+* remove forceExit flag from Jest tests ([c2de378](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/c2de37854f64559496642e75005050564f825c48))
+
 ### [1.1.3](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.1.2...v1.1.3) (2025-06-04)
 
 
