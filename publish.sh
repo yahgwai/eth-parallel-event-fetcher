@@ -27,7 +27,7 @@ VERSION=$(node -p "require('./package.json').version")
 
 # Extract the latest release notes from CHANGELOG.md
 # Get content between the first version header and the next version header (handles both ## and ###)
-NOTES=$(awk '/^##+ \['"$VERSION"'\]/ {flag=1; next} /^##/ && flag {exit} flag' CHANGELOG.md)
+NOTES=$(awk '/^##+ \['"$VERSION"'\]/ {flag=1; next} /^#+ \[/ && flag {exit} flag' CHANGELOG.md)
 
 # Push commits and tags
 echo "Pushing to git..."
