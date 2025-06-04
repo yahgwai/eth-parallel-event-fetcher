@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.7](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.6...v1.2.7) (2025-06-04)
+
+
+### Chores
+
+* standardize changelog bullet points to asterisks ([5e8ee66](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/5e8ee66b0fe947e0d370a9c17f32bd2c66229c66))
+
 ### [1.2.6](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.5...v1.2.6) (2025-06-04)
 
 
