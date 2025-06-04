@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.9](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.8...v1.2.9) (2025-06-04)
+
+
+### Chores
+
+* disable dependabot auto-rebase to prevent retry loops ([39807de](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/39807dec9865e3ffdd5689e6b8ec6b8635991765))
+
 ### [1.2.8](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.7...v1.2.8) (2025-06-04)
 
 
