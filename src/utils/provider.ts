@@ -22,20 +22,17 @@ export interface ProviderStatus {
   isConnected: boolean;
 }
 
-
 /**
  * Creates and validates a retryable ethers provider
  */
-export async function createProvider(
-  options: ProviderOptions = {}
-): Promise<RetryableProvider> {
+export async function createProvider(options: ProviderOptions = {}): Promise<RetryableProvider> {
   const {
     url,
     pollingInterval = 4000,
     maxRetries = 3,
     initialRetryDelay = 1000,
     maxRetryDelay,
-    retryJitter
+    retryJitter,
   } = options;
 
   if (!url) {
@@ -47,9 +44,9 @@ export async function createProvider(
     maxRetries,
     initialRetryDelay,
     maxRetryDelay,
-    retryJitter
+    retryJitter,
   });
-  
+
   // Configure provider options
   provider.pollingInterval = pollingInterval;
 
@@ -57,7 +54,7 @@ export async function createProvider(
   try {
     // Verify the connection by getting the network
     await provider.getNetwork();
-    
+
     return provider;
   } catch (error) {
     throw new ProviderError(
@@ -80,7 +77,7 @@ export async function getProviderStatus(
     const [network, blockNumber, isSyncing] = await Promise.all([
       provider.getNetwork(),
       provider.getBlockNumber(),
-      provider.send('eth_syncing', [])
+      provider.send('eth_syncing', []),
     ]);
 
     return {
@@ -88,15 +85,15 @@ export async function getProviderStatus(
       chainId: network.chainId,
       latestBlock: blockNumber,
       syncStatus: !!isSyncing,
-      isConnected: true
+      isConnected: true,
     };
-  } catch (error) {
+  } catch {
     return {
       networkName: 'unknown',
       chainId: -1,
       latestBlock: -1,
       syncStatus: false,
-      isConnected: false
+      isConnected: false,
     };
   }
 }

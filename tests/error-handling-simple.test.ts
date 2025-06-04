@@ -5,47 +5,47 @@ describe.skip('Error Handling - Simple Tests', () => {
   it('should validate configuration errors correctly', () => {
     expect(() => {
       new GenericEventFetcher({
-        concurrency: -1
+        concurrency: -1,
       });
     }).toThrow('Invalid configuration');
 
     expect(() => {
       new GenericEventFetcher({
-        chunkSize: 0
+        chunkSize: 0,
       });
     }).toThrow('Invalid configuration');
 
     expect(() => {
       new GenericEventFetcher({
-        maxRetries: -1
+        maxRetries: -1,
       });
     }).toThrow('Invalid configuration');
 
     expect(() => {
       new GenericEventFetcher({
-        initialRetryDelay: 50
+        initialRetryDelay: 50,
       });
     }).toThrow('Invalid configuration');
   });
 
   it('should handle updateConfig validation errors', () => {
     const fetcher = new GenericEventFetcher(DEFAULT_CONFIG);
-    
+
     expect(() => {
       fetcher.updateConfig({
-        concurrency: 0
+        concurrency: 0,
       });
     }).toThrow('Invalid configuration');
 
     expect(() => {
       fetcher.updateConfig({
-        chunkSize: -100
+        chunkSize: -100,
       });
     }).toThrow('Invalid configuration');
 
     expect(() => {
       fetcher.updateConfig({
-        initialRetryDelay: 50
+        initialRetryDelay: 50,
       });
     }).toThrow('Invalid configuration');
   });
@@ -62,7 +62,11 @@ describe.skip('Error Handling - Simple Tests', () => {
     expect(validateConfig(invalidConfig3).valid).toBe(false);
 
     expect(validateConfig(invalidConfig1).errors).toContain('concurrency must be between 1 and 50');
-    expect(validateConfig(invalidConfig2).errors).toContain('chunkSize must be between 100 and 100,000');
-    expect(validateConfig(invalidConfig3).errors).toContain('initialRetryDelay must be between 100ms and 30 seconds');
+    expect(validateConfig(invalidConfig2).errors).toContain(
+      'chunkSize must be between 100 and 100,000'
+    );
+    expect(validateConfig(invalidConfig3).errors).toContain(
+      'initialRetryDelay must be between 100ms and 30 seconds'
+    );
   });
 });

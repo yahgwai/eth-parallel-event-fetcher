@@ -1,9 +1,9 @@
-import { 
-  DEFAULT_CONFIG, 
-  ENV_VARS, 
-  loadConfigFromEnv, 
-  createConfig, 
-  validateConfig 
+import {
+  DEFAULT_CONFIG,
+  ENV_VARS,
+  loadConfigFromEnv,
+  createConfig,
+  validateConfig,
 } from '../src/config';
 
 describe.skip('Configuration System', () => {
@@ -26,7 +26,7 @@ describe.skip('Configuration System', () => {
         showProgress: false,
         progressCallback: expect.any(Function),
         continueOnError: true,
-        maxLogsPerChunk: 10000
+        maxLogsPerChunk: 10000,
       });
     });
 
@@ -38,7 +38,7 @@ describe.skip('Configuration System', () => {
   describe('loadConfigFromEnv', () => {
     test('should return empty config when no env vars set', () => {
       // Clear all relevant env vars
-      Object.values(ENV_VARS).forEach(envVar => {
+      Object.values(ENV_VARS).forEach((envVar) => {
         delete process.env[envVar];
       });
 
@@ -61,7 +61,7 @@ describe.skip('Configuration System', () => {
         maxRetries: 5,
         initialRetryDelay: 2000,
         rateLimitPerSecond: 15,
-        maxLogsPerChunk: 8000
+        maxLogsPerChunk: 8000,
       });
     });
 
@@ -109,7 +109,7 @@ describe.skip('Configuration System', () => {
   describe('createConfig', () => {
     test('should return default config when no overrides provided', () => {
       // Clear env vars
-      Object.values(ENV_VARS).forEach(envVar => {
+      Object.values(ENV_VARS).forEach((envVar) => {
         delete process.env[envVar];
       });
 
@@ -125,7 +125,7 @@ describe.skip('Configuration System', () => {
       expect(config).toEqual({
         ...DEFAULT_CONFIG,
         concurrency: 8,
-        showProgress: true
+        showProgress: true,
       });
     });
 
@@ -135,14 +135,14 @@ describe.skip('Configuration System', () => {
 
       const config = createConfig({
         concurrency: 12,
-        maxRetries: 5
+        maxRetries: 5,
       });
 
       expect(config).toEqual({
         ...DEFAULT_CONFIG,
         concurrency: 12, // Override wins
         chunkSize: 5000, // Env var used
-        maxRetries: 5    // Override wins
+        maxRetries: 5, // Override wins
       });
     });
   });
@@ -236,7 +236,7 @@ describe.skip('Configuration System', () => {
       const result = validateConfig({
         concurrency: 0,
         chunkSize: 50,
-        maxRetries: -1
+        maxRetries: -1,
       });
 
       expect(result.valid).toBe(false);
@@ -249,7 +249,7 @@ describe.skip('Configuration System', () => {
     test('should ignore undefined values in validation', () => {
       const result = validateConfig({
         concurrency: undefined,
-        chunkSize: undefined
+        chunkSize: undefined,
       });
 
       expect(result.valid).toBe(true);

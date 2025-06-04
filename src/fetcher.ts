@@ -1,10 +1,10 @@
 import { ethers } from 'ethers';
-import { 
-  ContractInterface, 
+import {
+  ContractInterface,
   EventFetcherOptions,
   FetcherConfig,
   ChunkFetchResult,
-  RawEvent
+  RawEvent,
 } from '../types';
 import { executeInParallel, createBlockRangeChunks } from './utils/parallel';
 import { createConfig, validateConfig } from './config';
@@ -14,10 +14,9 @@ import { ConfigurationError, EventFetchError, ChunkTruncationError } from './err
  * Generic event fetcher implementation that can work with any Ethereum contract events
  */
 export class GenericEventFetcher<
-  TRawEvent extends RawEvent = RawEvent, 
-  TAddress extends string = string
+  TRawEvent extends RawEvent = RawEvent,
+  TAddress extends string = string,
 > {
-
   private config: Required<FetcherConfig>;
 
   /**
@@ -25,7 +24,7 @@ export class GenericEventFetcher<
    */
   constructor(config: Partial<FetcherConfig> = {}) {
     this.config = createConfig(config);
-    
+
     // Validate configuration
     const validation = validateConfig(this.config);
     if (!validation.valid) {
@@ -46,7 +45,7 @@ export class GenericEventFetcher<
       toBlock,
       contractAddress,
       chunkSize = this.config.chunkSize,
-      onProgress
+      onProgress,
     } = options;
 
     // Create chunks for querying
@@ -54,7 +53,9 @@ export class GenericEventFetcher<
     const totalChunks = blockRangeChunks.length;
 
     if (this.config.showProgress) {
-      console.log(`Fetching ${eventName} events from blocks ${fromBlock.toLocaleString()} to ${toBlock.toLocaleString()} in ${totalChunks} chunks`);
+      console.log(
+        `Fetching ${eventName} events from blocks ${fromBlock.toLocaleString()} to ${toBlock.toLocaleString()} in ${totalChunks} chunks`
+      );
     }
 
     // Create tasks for parallel execution
@@ -65,7 +66,7 @@ export class GenericEventFetcher<
           try {
             // Get the proper event signature using the contract's filters method
             const eventSignatureFilter = contract.filters[eventName]();
-            
+
             // Create the filter for this chunk
             const filter: ethers.EventFilter = {
               address: contractAddress as string,
@@ -74,18 +75,18 @@ export class GenericEventFetcher<
 
             // Query the events for this chunk
             const rawEvents = await contract.queryFilter(filter, chunkFromBlock, chunkToBlock);
-            
+
             events = rawEvents as unknown as TRawEvent[];
           } catch (err) {
             const error = new EventFetchError(
               'Failed to query events',
               {
                 contract: { contractAddress: contractAddress as string, eventName },
-                blockRange: { fromBlock: chunkFromBlock, toBlock: chunkToBlock }
+                blockRange: { fromBlock: chunkFromBlock, toBlock: chunkToBlock },
               },
               err instanceof Error ? err : new Error(String(err))
             );
-            
+
             if (this.config.showProgress) {
               console.error(error.message);
             }
@@ -103,23 +104,26 @@ export class GenericEventFetcher<
 
           return {
             events,
-            chunkRange: [chunkFromBlock, chunkToBlock]
+            chunkRange: [chunkFromBlock, chunkToBlock],
           };
         } catch (error) {
           if (this.config.showProgress) {
-            console.error(`Error fetching ${eventName} events for blocks ${chunkFromBlock}-${chunkToBlock}:`, error);
+            console.error(
+              `Error fetching ${eventName} events for blocks ${chunkFromBlock}-${chunkToBlock}:`,
+              error
+            );
           }
-          
+
           // Re-throw if already a FetcherError
           if (error instanceof Error && error.name.includes('Error')) {
             throw error;
           }
-          
+
           throw new EventFetchError(
             'Failed to fetch events for chunk',
             {
               contract: { contractAddress: contractAddress as string, eventName },
-              blockRange: { fromBlock: chunkFromBlock, toBlock: chunkToBlock }
+              blockRange: { fromBlock: chunkFromBlock, toBlock: chunkToBlock },
             },
             error instanceof Error ? error : new Error(String(error))
           );
@@ -145,14 +149,14 @@ export class GenericEventFetcher<
         if (this.config.progressCallback) {
           this.config.progressCallback(completed, total, [fromBlock, toBlock]);
         }
-      }
+      },
     });
 
     // Process results
     let totalEvents = 0;
     const allRawEvents: TRawEvent[] = [];
 
-    results.forEach(result => {
+    results.forEach((result) => {
       const { events } = result;
       allRawEvents.push(...events);
       totalEvents += events.length;
@@ -160,7 +164,9 @@ export class GenericEventFetcher<
 
     // Log completion
     if (this.config.showProgress) {
-      console.log(`Completed fetching ${eventName} events. Found ${totalEvents} events across ${results.length} chunks.`);
+      console.log(
+        `Completed fetching ${eventName} events. Found ${totalEvents} events across ${results.length} chunks.`
+      );
     }
 
     return allRawEvents;
@@ -172,15 +178,15 @@ export class GenericEventFetcher<
   updateConfig(newConfig: Partial<FetcherConfig>): void {
     const updatedConfig = createConfig({
       ...this.config,
-      ...newConfig
+      ...newConfig,
     });
-    
+
     // Validate the new configuration
     const validation = validateConfig(updatedConfig);
     if (!validation.valid) {
       throw new ConfigurationError('Configuration validation failed', validation.errors);
     }
-    
+
     this.config = updatedConfig;
   }
 

@@ -7,11 +7,11 @@
  */
 export abstract class FetcherError extends Error {
   abstract readonly code: string;
-  
+
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
-    
+
     // Maintains proper stack trace for where our error was thrown
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
@@ -50,7 +50,7 @@ export interface RetryContext {
  */
 export class ConfigurationError extends FetcherError {
   readonly code = 'CONFIGURATION_ERROR';
-  
+
   constructor(
     message: string,
     public readonly errors: string[]
@@ -64,14 +64,14 @@ export class ConfigurationError extends FetcherError {
  */
 export class BlockRangeError extends FetcherError {
   readonly code = 'BLOCK_RANGE_ERROR';
-  
+
   constructor(
     message: string,
     public readonly context: BlockRangeContext
   ) {
     super(
       `Block range error: ${message} ` +
-      `(fromBlock: ${context.fromBlock}, toBlock: ${context.toBlock}, chunkSize: ${context.chunkSize || 'N/A'})`
+        `(fromBlock: ${context.fromBlock}, toBlock: ${context.toBlock}, chunkSize: ${context.chunkSize || 'N/A'})`
     );
   }
 }
@@ -81,7 +81,7 @@ export class BlockRangeError extends FetcherError {
  */
 export class EventFetchError extends FetcherError {
   readonly code = 'EVENT_FETCH_ERROR';
-  
+
   constructor(
     message: string,
     public readonly context: {
@@ -92,29 +92,25 @@ export class EventFetchError extends FetcherError {
     public readonly originalError?: Error
   ) {
     const contextParts: string[] = [];
-    
+
     if (context.contract) {
       contextParts.push(
         `Contract: ${context.contract.contractAddress}` +
-        (context.contract.eventName ? `, Event: ${context.contract.eventName}` : '')
+          (context.contract.eventName ? `, Event: ${context.contract.eventName}` : '')
       );
     }
-    
+
     if (context.blockRange) {
-      contextParts.push(
-        `Blocks: ${context.blockRange.fromBlock}-${context.blockRange.toBlock}`
-      );
+      contextParts.push(`Blocks: ${context.blockRange.fromBlock}-${context.blockRange.toBlock}`);
     }
-    
+
     if (context.retry) {
-      contextParts.push(
-        `Retry: ${context.retry.attempt}/${context.retry.maxRetries}`
-      );
+      contextParts.push(`Retry: ${context.retry.attempt}/${context.retry.maxRetries}`);
     }
-    
+
     super(
       `${message}${contextParts.length > 0 ? ' | ' + contextParts.join(' | ') : ''}` +
-      (originalError ? `\nCaused by: ${originalError.message}` : '')
+        (originalError ? `\nCaused by: ${originalError.message}` : '')
     );
   }
 }
@@ -124,7 +120,7 @@ export class EventFetchError extends FetcherError {
  */
 export class RateLimitError extends FetcherError {
   readonly code = 'RATE_LIMIT_ERROR';
-  
+
   constructor(
     message: string,
     public readonly retryAfter?: number,
@@ -134,15 +130,15 @@ export class RateLimitError extends FetcherError {
     }
   ) {
     const details = [message];
-    
+
     if (retryAfter) {
       details.push(`Retry after: ${retryAfter}ms`);
     }
-    
+
     if (context?.currentRate && context?.maxRate) {
       details.push(`Current rate: ${context.currentRate}/${context.maxRate} requests/sec`);
     }
-    
+
     super(details.join(' | '));
   }
 }
@@ -152,7 +148,7 @@ export class RateLimitError extends FetcherError {
  */
 export class ProviderError extends FetcherError {
   readonly code = 'PROVIDER_ERROR';
-  
+
   constructor(
     message: string,
     public readonly providerUrl?: string,
@@ -160,8 +156,8 @@ export class ProviderError extends FetcherError {
   ) {
     super(
       `Provider error: ${message}` +
-      (providerUrl ? ` (URL: ${providerUrl})` : '') +
-      (originalError ? `\nCaused by: ${originalError.message}` : '')
+        (providerUrl ? ` (URL: ${providerUrl})` : '') +
+        (originalError ? `\nCaused by: ${originalError.message}` : '')
     );
   }
 }
@@ -171,7 +167,7 @@ export class ProviderError extends FetcherError {
  */
 export class ProcessingError extends FetcherError {
   readonly code = 'PROCESSING_ERROR';
-  
+
   constructor(
     message: string,
     public readonly eventIndex: number,
@@ -180,7 +176,7 @@ export class ProcessingError extends FetcherError {
   ) {
     super(
       `Event processing error at index ${eventIndex}: ${message}` +
-      (originalError ? `\nCaused by: ${originalError.message}` : '')
+        (originalError ? `\nCaused by: ${originalError.message}` : '')
     );
   }
 }
@@ -190,7 +186,7 @@ export class ProcessingError extends FetcherError {
  */
 export class ChunkTruncationError extends FetcherError {
   readonly code = 'CHUNK_TRUNCATION_ERROR';
-  
+
   constructor(
     public readonly chunkRange: [number, number],
     public readonly eventCount: number,
@@ -198,8 +194,8 @@ export class ChunkTruncationError extends FetcherError {
   ) {
     super(
       `Potential event truncation detected: Chunk ${chunkRange[0]}-${chunkRange[1]} ` +
-      `returned ${eventCount} events, which meets or exceeds the limit of ${limit}. ` +
-      `Consider using a smaller chunk size.`
+        `returned ${eventCount} events, which meets or exceeds the limit of ${limit}. ` +
+        `Consider using a smaller chunk size.`
     );
   }
 }
@@ -209,7 +205,7 @@ export class ChunkTruncationError extends FetcherError {
  */
 export class ParallelExecutionError extends FetcherError {
   readonly code = 'PARALLEL_EXECUTION_ERROR';
-  
+
   constructor(
     message: string,
     public readonly failedTasks: number,
@@ -218,8 +214,8 @@ export class ParallelExecutionError extends FetcherError {
   ) {
     super(
       `Parallel execution failed: ${message} ` +
-      `(${failedTasks}/${totalTasks} tasks failed)\n` +
-      `First error: ${errors[0]?.message || 'Unknown error'}`
+        `(${failedTasks}/${totalTasks} tasks failed)\n` +
+        `First error: ${errors[0]?.message || 'Unknown error'}`
     );
   }
 }
@@ -245,7 +241,7 @@ export function isRetryableError(error: unknown): boolean {
   if (error instanceof RateLimitError || error instanceof ProviderError) {
     return true;
   }
-  
+
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
     return (
@@ -256,7 +252,7 @@ export function isRetryableError(error: unknown): boolean {
       message.includes('enotfound')
     );
   }
-  
+
   return false;
 }
 
@@ -267,8 +263,6 @@ export function wrapError(error: unknown, context?: string): Error {
   if (error instanceof Error) {
     return error;
   }
-  
-  return new Error(
-    `${context ? context + ': ' : ''}${String(error)}`
-  );
+
+  return new Error(`${context ? context + ': ' : ''}${String(error)}`);
 }

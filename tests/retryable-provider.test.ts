@@ -14,13 +14,13 @@ describe.skip('RetryableProvider', () => {
       if (method === 'eth_chainId' || method === 'net_version') {
         return Promise.resolve('0x1');
       }
-      
+
       // Handle test method with custom behavior
       if (method === 'test') {
         const callCount = mockFn.mock.calls.filter((call: any[]) => call[0] === 'test').length;
         return testMethodBehavior(callCount);
       }
-      
+
       return Promise.resolve(null);
     });
     return mockFn;
@@ -28,7 +28,7 @@ describe.skip('RetryableProvider', () => {
 
   // Helper to count test method calls
   const getTestCallCount = (mockFn: jest.Mock): number => {
-    return mockFn.mock.calls.filter(call => call[0] === 'test').length;
+    return mockFn.mock.calls.filter((call) => call[0] === 'test').length;
   };
 
   beforeAll(() => {
@@ -52,15 +52,15 @@ describe.skip('RetryableProvider', () => {
     test('should return result on first successful attempt', async () => {
       const mockSend = createMockSend(() => Promise.resolve('success'));
       ethers.providers.JsonRpcProvider.prototype.send = mockSend;
-      
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 2,
         initialRetryDelay: 50,
-        retryJitter: false
+        retryJitter: false,
       });
-      
+
       const result = await provider.send('test', []);
-      
+
       expect(result).toBe('success');
       expect(getTestCallCount(mockSend)).toBe(1);
     });
@@ -75,17 +75,17 @@ describe.skip('RetryableProvider', () => {
           return Promise.resolve('success');
         }
       });
-      
+
       ethers.providers.JsonRpcProvider.prototype.send = mockSend;
-      
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 2,
         initialRetryDelay: 50,
-        retryJitter: false
+        retryJitter: false,
       });
-      
+
       const result = await provider.send('test', []);
-      
+
       expect(result).toBe('success');
       expect(getTestCallCount(mockSend)).toBe(3);
     });
@@ -93,17 +93,15 @@ describe.skip('RetryableProvider', () => {
     test('should throw ProviderError after exhausting retries', async () => {
       const mockSend = createMockSend(() => Promise.reject(new Error('Always fails')));
       ethers.providers.JsonRpcProvider.prototype.send = mockSend;
-      
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 2,
         initialRetryDelay: 50,
-        retryJitter: false
+        retryJitter: false,
       });
-      
-      await expect(provider.send('test', []))
-        .rejects
-        .toThrow(ProviderError);
-      
+
+      await expect(provider.send('test', [])).rejects.toThrow(ProviderError);
+
       expect(getTestCallCount(mockSend)).toBe(3); // Initial + 2 retries
     });
   });
@@ -112,17 +110,15 @@ describe.skip('RetryableProvider', () => {
     test('should throw RateLimitError for rate limit errors', async () => {
       const mockSend = createMockSend(() => Promise.reject(new Error('429 Too Many Requests')));
       ethers.providers.JsonRpcProvider.prototype.send = mockSend;
-      
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 1,
         initialRetryDelay: 50,
-        retryJitter: false
+        retryJitter: false,
       });
-      
-      await expect(provider.send('test', []))
-        .rejects
-        .toThrow(RateLimitError);
-        
+
+      await expect(provider.send('test', [])).rejects.toThrow(RateLimitError);
+
       expect(getTestCallCount(mockSend)).toBe(2); // Initial + 1 retry
     });
 
@@ -132,20 +128,18 @@ describe.skip('RetryableProvider', () => {
         'Rate limit exceeded',
         'too many requests',
         'Request exceeded capacity',
-        'Request throttled'
+        'Request throttled',
       ];
-      
+
       for (const message of rateLimitMessages) {
         const mockSend = createMockSend(() => Promise.reject(new Error(message)));
         ethers.providers.JsonRpcProvider.prototype.send = mockSend;
-        
+
         const provider = new RetryableProvider(undefined, undefined, {
-          maxRetries: 0
+          maxRetries: 0,
         });
-        
-        await expect(provider.send('test', []))
-          .rejects
-          .toThrow(RateLimitError);
+
+        await expect(provider.send('test', [])).rejects.toThrow(RateLimitError);
       }
     });
   });
@@ -161,19 +155,19 @@ describe.skip('RetryableProvider', () => {
           return Promise.resolve('success');
         }
       });
-      
+
       ethers.providers.JsonRpcProvider.prototype.send = mockSend;
-      
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 2,
         initialRetryDelay: 100,
-        retryJitter: false
+        retryJitter: false,
       });
-      
+
       const startTime = Date.now();
       await provider.send('test', []);
       const endTime = Date.now();
-      
+
       // Should have delayed: 100ms (first retry) + 200ms (second retry) = 300ms
       const elapsed = endTime - startTime;
       expect(elapsed).toBeGreaterThanOrEqual(300);
@@ -188,20 +182,20 @@ describe.skip('RetryableProvider', () => {
           return Promise.resolve('success');
         }
       });
-      
+
       ethers.providers.JsonRpcProvider.prototype.send = mockSend;
-      
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 3,
         initialRetryDelay: 500,
         maxRetryDelay: 600,
-        retryJitter: false
+        retryJitter: false,
       });
-      
+
       const startTime = Date.now();
       await provider.send('test', []);
       const endTime = Date.now();
-      
+
       // Should have delayed: 500ms + 600ms (capped) + 600ms (capped) = 1700ms
       const elapsed = endTime - startTime;
       expect(elapsed).toBeGreaterThanOrEqual(1700);
@@ -209,20 +203,21 @@ describe.skip('RetryableProvider', () => {
     });
 
     test('should apply jitter when enabled', async () => {
-      ethers.providers.JsonRpcProvider.prototype.send = jest.fn()
+      ethers.providers.JsonRpcProvider.prototype.send = jest
+        .fn()
         .mockRejectedValueOnce(new Error('Fail'))
         .mockResolvedValueOnce('success');
-      
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 1,
         initialRetryDelay: 1000,
-        retryJitter: true
+        retryJitter: true,
       });
-      
+
       const startTime = Date.now();
       await provider.send('test', []);
       const endTime = Date.now();
-      
+
       const elapsed = endTime - startTime;
       // With jitter (±10%), delay should be between 900ms and 1100ms
       expect(elapsed).toBeGreaterThanOrEqual(900);
@@ -232,18 +227,19 @@ describe.skip('RetryableProvider', () => {
 
   describe('perform method', () => {
     test('should retry perform operations', async () => {
-      ethers.providers.JsonRpcProvider.prototype.perform = jest.fn()
+      ethers.providers.JsonRpcProvider.prototype.perform = jest
+        .fn()
         .mockRejectedValueOnce(new Error('Fail'))
         .mockResolvedValueOnce('success');
-      
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 1,
         initialRetryDelay: 50,
-        retryJitter: false
+        retryJitter: false,
       });
-      
+
       const result = await provider.perform('test', {});
-      
+
       expect(result).toBe('success');
       expect(ethers.providers.JsonRpcProvider.prototype.perform).toHaveBeenCalledTimes(2);
     });
@@ -253,13 +249,13 @@ describe.skip('RetryableProvider', () => {
     test('should create RetryableProvider from existing provider', () => {
       const mockProvider = {
         connection: { url: 'https://example.com' },
-        network: { name: 'mainnet', chainId: 1 }
+        network: { name: 'mainnet', chainId: 1 },
       } as ethers.providers.JsonRpcProvider;
-      
+
       const retryable = RetryableProvider.fromProvider(mockProvider, {
-        maxRetries: 5
+        maxRetries: 5,
       });
-      
+
       expect(retryable).toBeInstanceOf(RetryableProvider);
       expect(retryable['maxRetries']).toBe(5);
     });
@@ -267,14 +263,14 @@ describe.skip('RetryableProvider', () => {
     test('should create new provider with cloneWithOptions', () => {
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 3,
-        initialRetryDelay: 100
+        initialRetryDelay: 100,
       });
-      
+
       const cloned = provider.cloneWithOptions({
         maxRetries: 5,
-        initialRetryDelay: 200
+        initialRetryDelay: 200,
       });
-      
+
       expect(cloned).toBeInstanceOf(RetryableProvider);
       expect(cloned).not.toBe(provider);
       expect(cloned['maxRetries']).toBe(5);
@@ -284,35 +280,31 @@ describe.skip('RetryableProvider', () => {
 
   describe('error handling', () => {
     test('should handle non-Error exceptions', async () => {
-      ethers.providers.JsonRpcProvider.prototype.send = jest.fn()
-        .mockRejectedValue('string error');
-      
+      ethers.providers.JsonRpcProvider.prototype.send = jest.fn().mockRejectedValue('string error');
+
       const provider = new RetryableProvider(undefined, undefined, {
         maxRetries: 0,
-        initialRetryDelay: 50
+        initialRetryDelay: 50,
       });
-      
-      await expect(provider.send('test', []))
-        .rejects
-        .toThrow(ProviderError);
+
+      await expect(provider.send('test', [])).rejects.toThrow(ProviderError);
     });
   });
 
   describe('concurrent requests', () => {
     test('should handle concurrent requests independently', async () => {
-      ethers.providers.JsonRpcProvider.prototype.send = jest.fn()
-        .mockImplementation((method) => {
-          return Promise.resolve(`result-${method}`);
-        });
-      
+      ethers.providers.JsonRpcProvider.prototype.send = jest.fn().mockImplementation((method) => {
+        return Promise.resolve(`result-${method}`);
+      });
+
       const provider = new RetryableProvider();
-      
+
       const results = await Promise.all([
         provider.send('method1', []),
         provider.send('method2', []),
-        provider.send('method3', [])
+        provider.send('method3', []),
       ]);
-      
+
       expect(results).toEqual(['result-method1', 'result-method2', 'result-method3']);
       expect(ethers.providers.JsonRpcProvider.prototype.send).toHaveBeenCalledTimes(3);
     });

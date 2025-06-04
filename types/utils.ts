@@ -9,8 +9,8 @@ export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? DeepPartial<U>[]
     : T[P] extends object
-    ? DeepPartial<T[P]>
-    : T[P];
+      ? DeepPartial<T[P]>
+      : T[P];
 };
 
 /**
@@ -20,8 +20,8 @@ export type DeepReadonly<T> = {
   readonly [P in keyof T]: T[P] extends (infer U)[]
     ? readonly DeepReadonly<U>[]
     : T[P] extends object
-    ? DeepReadonly<T[P]>
-    : T[P];
+      ? DeepReadonly<T[P]>
+      : T[P];
 };
 
 /**
@@ -91,9 +91,7 @@ export type NumberRecord<T = unknown> = Record<number, T>;
 /**
  * Represents either a successful result or an error
  */
-export type Result<T, E = Error> = 
-  | { success: true; data: T }
-  | { success: false; error: E };
+export type Result<T, E = Error> = { success: true; data: T } | { success: false; error: E };
 
 /**
  * Helper to create a successful Result
@@ -150,17 +148,18 @@ export type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>;
 /**
  * Type for constructor functions
  */
-export type Constructor<T = {}> = new (...args: unknown[]) => T;
+export type Constructor<T = object> = new (...args: unknown[]) => T;
 
 /**
  * Type for abstract constructor functions
  */
-export type AbstractConstructor<T = {}> = abstract new (...args: unknown[]) => T;
+export type AbstractConstructor<T = object> = abstract new (...args: unknown[]) => T;
 
 /**
  * Get the instance type of a constructor function type
  */
-export type InstanceType<T extends AbstractConstructor> = T extends AbstractConstructor<infer U> ? U : never;
+export type InstanceType<T extends AbstractConstructor> =
+  T extends AbstractConstructor<infer U> ? U : never;
 
 /**
  * Merge two types, with properties from the second type overwriting the first
@@ -177,8 +176,7 @@ export type Subset<T, K extends keyof T = keyof T> = {
 /**
  * Ensure that a type has at least one of the specified properties
  */
-export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = 
-  Pick<T, Exclude<keyof T, Keys>> &
+export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
     [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>;
   }[Keys];
@@ -186,8 +184,7 @@ export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
 /**
  * Ensure that a type has exactly one of the specified properties
  */
-export type RequireExactlyOne<T, Keys extends keyof T = keyof T> =
-  Pick<T, Exclude<keyof T, Keys>> &
+export type RequireExactlyOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
     [K in Keys]-?: Required<Pick<T, K>> & Partial<Record<Exclude<Keys, K>, undefined>>;
   }[Keys];
@@ -226,7 +223,7 @@ export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 export type Jsonify<T> = T extends JsonValue
   ? T
   : T extends (...args: unknown[]) => unknown
-  ? never
-  : T extends object
-  ? { [K in keyof T]: Jsonify<T[K]> }
-  : never;
+    ? never
+    : T extends object
+      ? { [K in keyof T]: Jsonify<T[K]> }
+      : never;

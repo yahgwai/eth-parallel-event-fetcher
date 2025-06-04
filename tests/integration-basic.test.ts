@@ -19,52 +19,49 @@ describe.skip('Integration - Basic Event Fetching', () => {
     const config = {
       ...DEFAULT_CONFIG,
       maxLogsPerChunk: 1000,
-      chunkSize: 1000
+      chunkSize: 1000,
     };
 
     fetcher = new GenericEventFetcher(config);
-    
+
     provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
-    
+
     const usdcAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
     const transferEventTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-    
+
     usdcContract = {
       address: usdcAddress,
       filters: {
-        Transfer: () => ({
-          topics: [transferEventTopic]
-        } as ethers.EventFilter)
+        Transfer: () =>
+          ({
+            topics: [transferEventTopic],
+          }) as ethers.EventFilter,
       },
       queryFilter: async (filter: ethers.EventFilter, fromBlock?: number, toBlock?: number) => {
         const logs = await provider.getLogs({
           ...filter,
           fromBlock,
-          toBlock
+          toBlock,
         });
-        return logs.map(log => ({
+        return logs.map((log) => ({
           ...log,
-          args: {} 
+          args: {},
         })) as ethers.Event[];
-      }
+      },
     };
   });
 
   it('should fetch Transfer events from USDC contract', async () => {
-    const events = await fetcher.fetchEvents(
-      usdcContract,
-      'Transfer',
-      {
-        contractAddress: usdcContract.address,
-        fromBlock: 18500000,
-        toBlock: 18500100
-      }
-    );
+    const events = await fetcher.fetchEvents(usdcContract, 'Transfer', {
+      contractAddress: usdcContract.address,
+      fromBlock: 18500000,
+      toBlock: 18500100,
+    });
 
     expect(events).toBeDefined();
     expect(Array.isArray(events)).toBe(true);
     expect(events.length).toBeGreaterThan(0);
-    
+
     const firstEvent = events[0];
     expect(firstEvent).toHaveProperty('address');
     expect(firstEvent).toHaveProperty('topics');
@@ -81,29 +78,25 @@ describe.skip('Integration - Basic Event Fetching', () => {
       from: string;
       to: string;
     }
-    
-    const events = await fetcher.fetchEvents(
-      usdcContract,
-      'Transfer',
-      {
-        contractAddress: usdcContract.address,
-        fromBlock: 18500000,
-        toBlock: 18500050
-      }
-    );
+
+    const events = await fetcher.fetchEvents(usdcContract, 'Transfer', {
+      contractAddress: usdcContract.address,
+      fromBlock: 18500000,
+      toBlock: 18500050,
+    });
 
     // Transform events after fetching
-    const transformedEvents: TransferData[] = events.map(event => ({
+    const transformedEvents: TransferData[] = events.map((event) => ({
       hash: event.transactionHash,
       block: event.blockNumber,
       from: event.topics[1],
-      to: event.topics[2]
+      to: event.topics[2],
     }));
 
     expect(transformedEvents).toBeDefined();
     expect(Array.isArray(transformedEvents)).toBe(true);
     expect(transformedEvents.length).toBeGreaterThan(0);
-    
+
     const firstEvent = transformedEvents[0];
     expect(firstEvent).toHaveProperty('hash');
     expect(firstEvent).toHaveProperty('block');
@@ -119,32 +112,29 @@ describe.skip('Integration - Basic Event Fetching', () => {
     const nonExistentContract: ContractInterface = {
       address: '0x1111111111111111111111111111111111111111',
       filters: {
-        Transfer: () => ({
-          topics: ['0x1111111111111111111111111111111111111111111111111111111111111111']
-        } as ethers.EventFilter)
+        Transfer: () =>
+          ({
+            topics: ['0x1111111111111111111111111111111111111111111111111111111111111111'],
+          }) as ethers.EventFilter,
       },
       queryFilter: async (filter: ethers.EventFilter, fromBlock?: number, toBlock?: number) => {
         const logs = await provider.getLogs({
           ...filter,
           fromBlock,
-          toBlock
+          toBlock,
         });
-        return logs.map(log => ({
+        return logs.map((log) => ({
           ...log,
-          args: {} 
+          args: {},
         })) as ethers.Event[];
-      }
+      },
     };
-    
-    const events = await fetcher.fetchEvents(
-      nonExistentContract,
-      'Transfer',
-      {
-        contractAddress: nonExistentContract.address,
-        fromBlock: 18500000,
-        toBlock: 18500010
-      }
-    );
+
+    const events = await fetcher.fetchEvents(nonExistentContract, 'Transfer', {
+      contractAddress: nonExistentContract.address,
+      fromBlock: 18500000,
+      toBlock: 18500010,
+    });
 
     expect(events).toBeDefined();
     expect(Array.isArray(events)).toBe(true);
