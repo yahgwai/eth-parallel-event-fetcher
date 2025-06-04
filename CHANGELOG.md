@@ -4,29 +4,26 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [0.1.0](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.1...v0.1.0) (2025-06-04)
 
-
 ### ⚠ BREAKING CHANGES
 
-* Package renamed from ethereum-parallel-fetcher to eth-parallel-event-fetcher
+- Package renamed from ethereum-parallel-fetcher to eth-parallel-event-fetcher
 
-- Rename npm package to match GitHub repository name
-- Revert to using GITHUB_TOKEN in release workflow
+* Rename npm package to match GitHub repository name
+* Revert to using GITHUB_TOKEN in release workflow
 
 ### Features
 
-* rename package to eth-parallel-event-fetcher ([3f3ce7d](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/3f3ce7d1aa0ecbbf3394d9d062b38424bd61d16a))
-
+- rename package to eth-parallel-event-fetcher ([3f3ce7d](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/3f3ce7d1aa0ecbbf3394d9d062b38424bd61d16a))
 
 ### Bug Fixes
 
-* correct CodeQL initialization order in security workflow ([a51def5](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/a51def5983a61cb6cfbbafc25e8c50366ae3e64e))
-* correct repository URLs to match actual GitHub repo name ([6b2e761](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/6b2e761322e95d6f43efdaa5abe3778f7e75e6be))
-* prepare for initial release of renamed package ([72f1770](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/72f177054ca63a267283a9b7ca1ff8c7058be86c))
-
+- correct CodeQL initialization order in security workflow ([a51def5](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/a51def5983a61cb6cfbbafc25e8c50366ae3e64e))
+- correct repository URLs to match actual GitHub repo name ([6b2e761](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/6b2e761322e95d6f43efdaa5abe3778f7e75e6be))
+- prepare for initial release of renamed package ([72f1770](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/72f177054ca63a267283a9b7ca1ff8c7058be86c))
 
 ### Continuous Integration
 
-* use release token for pushing to protected main branch ([3164d4e](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/3164d4e8fae510fccec1878529e682c7528454b3))
+- use release token for pushing to protected main branch ([3164d4e](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/3164d4e8fae510fccec1878529e682c7528454b3))
 
 ### [1.2.1](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.0...v1.2.1) (2025-06-04)
 
