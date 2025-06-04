@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.4](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.3...v1.2.4) (2025-06-04)
+
+
+### Bug Fixes
+
+* improve changelog extraction to handle all header levels ([4735058](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/473505800268375e20f106c389c0bf1919ec4854))
+
 ### [1.2.3](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v0.1.0...v1.2.3) (2025-06-04)
 
 ### Bug Fixes
