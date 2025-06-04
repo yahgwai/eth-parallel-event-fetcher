@@ -1,7 +1,10 @@
 name: Release
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
     branches:
       - main
   workflow_dispatch:
@@ -21,6 +24,10 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    # Only run if tests passed (or manual trigger)
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      github.event.workflow_run.conclusion == 'success'
     permissions:
       contents: write
       id-token: write
@@ -42,13 +49,6 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
     
     - run: npm ci
-    
-    # Run linting and type checking
-    - run: npm run lint
-    - run: npm run typecheck
-    
-    # Run tests
-    - run: npm test
     
     # Determine release type
     - name: Determine release type
