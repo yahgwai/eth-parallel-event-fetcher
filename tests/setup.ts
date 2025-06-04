@@ -28,9 +28,10 @@ afterAll(async () => {
     // For JsonRpcProvider in ethers v5, remove listeners and polling
     testProvider.removeAllListeners();
     testProvider.polling = false;
-    // @ts-expect-error - Access internal connection to close it
-    if ((testProvider as any)._websocket) {
-      (testProvider as any)._websocket.close();
+    // Access internal connection to close it if it exists
+    const provider = testProvider as any;
+    if (provider._websocket) {
+      provider._websocket.close();
     }
   }
 });
