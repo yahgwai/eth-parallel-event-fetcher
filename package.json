@@ -9,13 +9,11 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --forceExit",
     "clean": "rm -rf dist",
-    "prerelease": "npm test && npm run clean",
-    "release": "standard-version",
-    "release:patch": "standard-version --release-as patch",
-    "release:minor": "standard-version --release-as minor",
-    "release:major": "standard-version --release-as major",
-    "release:first": "standard-version --first-release",
-    "postrelease": "./publish.sh"
+    "release": "npm test && npm run clean && standard-version && ./publish.sh",
+    "release:patch": "npm test && npm run clean && standard-version --release-as patch && ./publish.sh",
+    "release:minor": "npm test && npm run clean && standard-version --release-as minor && ./publish.sh",
+    "release:major": "npm test && npm run clean && standard-version --release-as major && ./publish.sh",
+    "release:first": "npm test && npm run clean && standard-version --first-release && ./publish.sh"
   },
   "keywords": [
     "ethereum",
