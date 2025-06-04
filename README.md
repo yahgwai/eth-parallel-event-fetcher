@@ -1,5 +1,9 @@
 # Ethereum Parallel Fetcher
 
+[![CI](https://github.com/yahgwai/ethereum-parallel-fetcher/actions/workflows/test.yml/badge.svg)](https://github.com/yahgwai/ethereum-parallel-fetcher/actions/workflows/test.yml)
+[![npm version](https://badge.fury.io/js/ethereum-parallel-fetcher.svg)](https://www.npmjs.com/package/ethereum-parallel-fetcher)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A TypeScript library for parallel fetching of Ethereum contract events with configurable concurrency, rate limiting, and block range chunking.
 
 ## Features
@@ -34,21 +38,17 @@ const contract = new ethers.Contract(contractAddress, abi, provider);
 const fetcher = new GenericEventFetcher();
 
 // Fetch events
-const events = await fetcher.fetchEvents(
-  contract,
-  'EventName',
-  {
-    fromBlock: 1000000,
-    toBlock: 1010000,
-    contractAddress: '0x...'
-  }
-);
+const events = await fetcher.fetchEvents(contract, 'EventName', {
+  fromBlock: 1000000,
+  toBlock: 1010000,
+  contractAddress: '0x...',
+});
 
 // Process events as needed
-const processedEvents = events.map(event => ({
+const processedEvents = events.map((event) => ({
   blockNumber: event.blockNumber,
   transactionHash: event.transactionHash,
-  args: event.args
+  args: event.args,
 }));
 ```
 
@@ -61,25 +61,25 @@ import { GenericEventFetcher, FetcherConfig } from 'ethereum-parallel-fetcher';
 
 const config: FetcherConfig = {
   // Concurrency and performance
-  concurrency: 10,           // Number of parallel requests (1-50)
-  chunkSize: 5000,          // Blocks per chunk (100-100,000)
-  
+  concurrency: 10, // Number of parallel requests (1-50)
+  chunkSize: 5000, // Blocks per chunk (100-100,000)
+
   // Retry configuration
-  maxRetries: 3,            // Number of retry attempts (0-10)
-  initialRetryDelay: 1000,  // Initial delay in ms (100-30,000)
-  
+  maxRetries: 3, // Number of retry attempts (0-10)
+  initialRetryDelay: 1000, // Initial delay in ms (100-30,000)
+
   // Rate limiting
-  rateLimitPerSecond: 10,   // Requests per second (1-1,000)
-  
+  rateLimitPerSecond: 10, // Requests per second (1-1,000)
+
   // Progress tracking
-  showProgress: true,       // Show console progress
+  showProgress: true, // Show console progress
   progressCallback: (completed, total, chunk) => {
     console.log(`Progress: ${completed}/${total} chunks`);
   },
-  
+
   // Error handling
-  continueOnError: true,    // Continue on individual chunk errors
-  maxLogsPerChunk: 9500     // Max logs per chunk to avoid truncation
+  continueOnError: true, // Continue on individual chunk errors
+  maxLogsPerChunk: 9500, // Max logs per chunk to avoid truncation
 };
 
 const fetcher = new GenericEventFetcher(config);
@@ -120,7 +120,7 @@ const DEFAULT_CONFIG = {
   rateLimitPerSecond: 10,
   showProgress: false,
   continueOnError: true,
-  maxLogsPerChunk: 10000
+  maxLogsPerChunk: 10000,
 };
 ```
 
@@ -147,6 +147,7 @@ async fetchEvents(
 ```
 
 **Parameters:**
+
 - `contract`: Ethers contract instance with event filters
 - `eventName`: Name of the event to fetch (must match contract ABI)
 - `options`: Fetch options including block range and contract address
@@ -168,7 +169,6 @@ getConfig(): Required<FetcherConfig>
 Get the current configuration.
 
 ### Types
-
 
 #### EventFetcherOptions
 
@@ -198,15 +198,11 @@ const contract = new ethers.Contract(ADDRESS, ABI, provider);
 const fetcher = new GenericEventFetcher({ concurrency: 8 });
 
 // Fetch events
-const events = await fetcher.fetchEvents(
-  contract,
-  'Transfer',
-  {
-    fromBlock: 18000000,
-    toBlock: 18100000,
-    contractAddress: ADDRESS
-  }
-);
+const events = await fetcher.fetchEvents(contract, 'Transfer', {
+  fromBlock: 18000000,
+  toBlock: 18100000,
+  contractAddress: ADDRESS,
+});
 
 console.log(`Found ${events.length} Transfer events`);
 ```
@@ -215,27 +211,23 @@ console.log(`Found ${events.length} Transfer events`);
 
 ```typescript
 // Fetch with progress tracking
-const events = await fetcher.fetchEvents(
-  contract,
-  'Transfer',
-  {
-    fromBlock: 18000000,
-    toBlock: 18100000,
-    contractAddress: ADDRESS,
-    onProgress: (completed, total) => {
-      console.log(`Progress: ${completed}/${total} chunks`);
-    }
-  }
-);
+const events = await fetcher.fetchEvents(contract, 'Transfer', {
+  fromBlock: 18000000,
+  toBlock: 18100000,
+  contractAddress: ADDRESS,
+  onProgress: (completed, total) => {
+    console.log(`Progress: ${completed}/${total} chunks`);
+  },
+});
 
 // Process events as needed
-const transfers = events.map(event => ({
+const transfers = events.map((event) => ({
   from: event.args.from,
   to: event.args.to,
   value: ethers.utils.formatEther(event.args.value),
   blockNumber: event.blockNumber,
   transactionHash: event.transactionHash,
-  timestamp: null // Will be populated separately if needed
+  timestamp: null, // Will be populated separately if needed
 }));
 ```
 
@@ -248,7 +240,11 @@ interface MyContract {
   filters: {
     MyEvent(): ethers.EventFilter;
   };
-  queryFilter(filter: ethers.EventFilter, fromBlock?: number, toBlock?: number): Promise<ethers.Event[]>;
+  queryFilter(
+    filter: ethers.EventFilter,
+    fromBlock?: number,
+    toBlock?: number
+  ): Promise<ethers.Event[]>;
 }
 
 interface MyEvent extends RawEvent {
@@ -259,23 +255,19 @@ interface MyEvent extends RawEvent {
 }
 
 const typedFetcher = new GenericEventFetcher<MyEvent, string>();
-const events = await typedFetcher.fetchEvents(
-  contract as MyContract,
-  'MyEvent',
-  {
-    fromBlock: 18000000,
-    toBlock: 18100000,
-    contractAddress: CONTRACT_ADDRESS
-  }
-);
+const events = await typedFetcher.fetchEvents(contract as MyContract, 'MyEvent', {
+  fromBlock: 18000000,
+  toBlock: 18100000,
+  contractAddress: CONTRACT_ADDRESS,
+});
 
 // Process events after fetching
-const processedEvents = events.map(event => ({
+const processedEvents = events.map((event) => ({
   param1: event.args.param1,
   param2: event.args.param2,
   blockNumber: event.blockNumber,
   txHash: event.transactionHash,
-  contractAddress: CONTRACT_ADDRESS
+  contractAddress: CONTRACT_ADDRESS,
 }));
 ```
 
@@ -321,15 +313,18 @@ try {
 ### Common Issues
 
 **"Potential event truncation detected"**
+
 - Reduce `chunkSize` to stay under provider limits
 - Check if the block range has unusually high activity
 
 **Rate limiting errors**
-- Reduce `concurrency` 
+
+- Reduce `concurrency`
 - Increase `initialRetryDelay`
 - Adjust `rateLimitPerSecond`
 
 **Timeout errors**
+
 - Increase `maxRetries`
 - Reduce `chunkSize` for problematic ranges
 - Check network connectivity
@@ -343,7 +338,7 @@ const fetcher = new GenericEventFetcher({
   showProgress: true,
   progressCallback: (completed, total, chunk) => {
     console.log(`Chunk ${completed}/${total}: blocks ${chunk[0]}-${chunk[1]}`);
-  }
+  },
 });
 ```
 
@@ -374,6 +369,7 @@ npm test -- --watch
 ### Test Environment Setup
 
 Tests require a local blockchain fork using Hardhat. The test setup automatically:
+
 - Forks Ethereum mainnet at block 18,500,000
 - Uses USDC contract for realistic testing
 - Provides 10-second timeout for setup
@@ -388,17 +384,20 @@ npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/your-key
 The test suite is organized into several categories:
 
 #### Unit Tests
+
 - **config.test.ts** (20 tests): Configuration system testing
-- **fetcher.test.ts** (18 tests): GenericEventFetcher class testing  
+- **fetcher.test.ts** (18 tests): GenericEventFetcher class testing
 - **utils.test.ts** (31 tests): Utility functions testing
 
 #### Integration Tests
+
 - **connectivity.test.ts** (3 tests): Blockchain connection testing
 - **integration-basic.test.ts** (3 tests): Basic event fetching
 - **integration-parallel.test.ts** (4 tests): Parallel processing
 - **integration-processor.test.ts** (3 tests): Event transformation patterns
 
 #### Error Handling & Large-Scale Tests
+
 - **error-handling-simple.test.ts** (3 tests): Configuration validation
 - **integration-large-scale-real.test.ts** (1 test): >500k block processing
 
@@ -423,12 +422,12 @@ describe('New Feature', () => {
   });
 });
 
-// Integration test example  
+// Integration test example
 describe('Integration - New Feature', () => {
   beforeAll(async () => {
     // Setup with real provider
   });
-  
+
   test('should work with real blockchain data', async () => {
     // Test with actual events
   }, 30000); // 30s timeout for integration tests
@@ -438,6 +437,7 @@ describe('Integration - New Feature', () => {
 ### Test Configuration
 
 Tests use Jest with the following configuration:
+
 - TypeScript support via `ts-jest`
 - ES module handling for dependencies
 - Mock implementations for external dependencies

@@ -1,5 +1,33 @@
 # Contributing
 
+## Development Setup
+
+### Git Hooks
+
+This project uses Git hooks for code quality. To set them up:
+
+```bash
+./.githooks/setup.sh
+```
+
+This configures:
+
+- **pre-commit**: Runs TypeScript, ESLint, and Prettier checks
+- **pre-push**: Runs tests and build
+
+To temporarily disable hooks:
+
+```bash
+git config core.hooksPath .git/hooks
+```
+
+### Code Quality Tools
+
+- **ESLint**: `npm run lint` or `npm run lint:fix`
+- **Prettier**: `npm run format` or `npm run format:check`
+- **TypeScript**: `npm run typecheck`
+- **Tests**: `npm test`
+
 ## Commit Message Guidelines
 
 This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and changelog generation.

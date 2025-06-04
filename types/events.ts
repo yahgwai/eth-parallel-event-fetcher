@@ -12,7 +12,10 @@ export type EventArgs<T extends RawEvent> = T extends RawEvent<infer TArgs> ? TA
 /**
  * Helper type to create a typed event from a raw event
  */
-export type TypedEvent<TEventName extends string, TArgs extends Record<string, unknown>> = RawEvent<TArgs> & {
+export type TypedEvent<
+  TEventName extends string,
+  TArgs extends Record<string, unknown>,
+> = RawEvent<TArgs> & {
   eventName: TEventName;
 };
 
@@ -34,8 +37,11 @@ export interface EventTypeBuilder {
 /**
  * Utility type for filtering events by name from a union
  */
-export type FilterEventByName<T extends { eventName: string }, TName extends string> = 
-  T extends { eventName: TName } ? T : never;
+export type FilterEventByName<T extends { eventName: string }, TName extends string> = T extends {
+  eventName: TName;
+}
+  ? T
+  : never;
 
 /**
  * Type guard to check if an event has a specific property
@@ -54,7 +60,10 @@ export function isEventWithName<TName extends string>(
   event: RawEvent,
   eventName: TName
 ): event is RawEvent & { eventName: TName } {
-  return hasEventProperty(event, 'eventName') && (event as RawEvent & { eventName: string }).eventName === eventName;
+  return (
+    hasEventProperty(event, 'eventName') &&
+    (event as RawEvent & { eventName: string }).eventName === eventName
+  );
 }
 
 /**
@@ -65,7 +74,7 @@ export function transformEventsWithAddress<TEvent extends RawEvent, TProcessed>(
   contractAddress: string,
   transform: (event: TEvent, contractAddress: string) => TProcessed
 ): TProcessed[] {
-  return events.map(event => transform(event, contractAddress));
+  return events.map((event) => transform(event, contractAddress));
 }
 
 /**
@@ -108,7 +117,7 @@ export class EventFilterBuilder {
   ): { eventName: string; args?: Partial<T['args']> } {
     return { eventName, args };
   }
-  
+
   /**
    * Create multiple filters at once
    */

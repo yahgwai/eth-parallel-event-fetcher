@@ -1,11 +1,14 @@
 import { ethers } from 'ethers';
-import { Awaitable } from './utils';
 
 /**
  * Generic provider interface that abstracts ethers provider functionality
  */
 export interface ProviderInterface {
-  queryFilter(filter: ethers.EventFilter, fromBlock?: number, toBlock?: number): Promise<ethers.Event[]>;
+  queryFilter(
+    filter: ethers.EventFilter,
+    fromBlock?: number,
+    toBlock?: number
+  ): Promise<ethers.Event[]>;
 }
 
 /**
@@ -27,14 +30,17 @@ export interface RawEvent<TArgs = Record<string, unknown>> {
   transactionHash: string;
 }
 
-
 /**
  * Generic contract interface
  */
 export interface ContractInterface<TAddress extends string = string> {
   address: TAddress;
   filters: Record<string, () => ethers.EventFilter>;
-  queryFilter(filter: ethers.EventFilter, fromBlock?: number, toBlock?: number): Promise<ethers.Event[]>;
+  queryFilter(
+    filter: ethers.EventFilter,
+    fromBlock?: number,
+    toBlock?: number
+  ): Promise<ethers.Event[]>;
 }
 
 /**
@@ -44,18 +50,18 @@ export interface FetcherConfig {
   // Concurrency and performance
   concurrency?: number;
   chunkSize?: number;
-  
+
   // Retry configuration
   maxRetries?: number;
   initialRetryDelay?: number;
-  
+
   // Rate limiting
   rateLimitPerSecond?: number;
-  
+
   // Progress tracking
   showProgress?: boolean;
   progressCallback?: (completed: number, total: number, currentChunk: [number, number]) => void;
-  
+
   // Error handling
   continueOnError?: boolean;
   maxLogsPerChunk?: number;
@@ -88,8 +94,8 @@ export interface ChunkFetchResult<TEvent extends RawEvent = RawEvent> {
  * Generic event fetcher interface
  */
 export interface EventFetcher<
-  TRawEvent extends RawEvent = RawEvent, 
-  TAddress extends string = string
+  TRawEvent extends RawEvent = RawEvent,
+  TAddress extends string = string,
 > {
   fetchEvents(
     contract: ContractInterface<TAddress>,

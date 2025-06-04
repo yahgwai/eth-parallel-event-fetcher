@@ -20,7 +20,7 @@ function isRateLimitError(error: Error): boolean {
     errorMsg.includes('429') ||
     errorMsg.includes('rate limit') ||
     errorMsg.includes('too many requests') ||
-    errorMsg.includes('exceeded') && errorMsg.includes('capacity') ||
+    (errorMsg.includes('exceeded') && errorMsg.includes('capacity')) ||
     errorMsg.includes('throttled')
   );
 }
@@ -40,7 +40,7 @@ export class RetryableProvider extends ethers.providers.JsonRpcProvider {
     options: RetryableProviderOptions = {}
   ) {
     super(url, network);
-    
+
     this.maxRetries = options.maxRetries ?? 3;
     this.initialRetryDelay = options.initialRetryDelay ?? 1000;
     this.maxRetryDelay = options.maxRetryDelay ?? 30000;
@@ -66,40 +66,37 @@ export class RetryableProvider extends ethers.providers.JsonRpcProvider {
    */
   private async withRetry<T>(operation: () => Promise<T>): Promise<T> {
     let lastError: Error | null = null;
-    
+
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         // Only retry if not the last attempt
         if (attempt < this.maxRetries) {
           const isRateLimit = isRateLimitError(lastError);
-          
+
           // Use longer delays for rate limit errors
-          const baseDelay = isRateLimit 
-            ? Math.max(this.initialRetryDelay * 2, 2000) 
+          const baseDelay = isRateLimit
+            ? Math.max(this.initialRetryDelay * 2, 2000)
             : this.initialRetryDelay;
-          
+
           // Exponential backoff
-          const backoffDelay = Math.min(
-            baseDelay * Math.pow(2, attempt),
-            this.maxRetryDelay
-          );
-          
+          const backoffDelay = Math.min(baseDelay * Math.pow(2, attempt), this.maxRetryDelay);
+
           // Add random jitter to avoid retry storms
           let finalDelay = backoffDelay;
           if (this.retryJitter) {
-            const jitter = isRateLimit ? (Math.random() * 0.6 - 0.3) : (Math.random() * 0.2 - 0.1);
+            const jitter = isRateLimit ? Math.random() * 0.6 - 0.3 : Math.random() * 0.2 - 0.1;
             finalDelay = Math.floor(backoffDelay * (1 + jitter));
           }
-          
-          await new Promise(resolve => setTimeout(resolve, finalDelay));
+
+          await new Promise((resolve) => setTimeout(resolve, finalDelay));
         }
       }
     }
-    
+
     // If we've exhausted retries, throw appropriate error
     if (lastError && isRateLimitError(lastError)) {
       throw new RateLimitError(
@@ -108,7 +105,7 @@ export class RetryableProvider extends ethers.providers.JsonRpcProvider {
         { maxRate: this.maxRetries }
       );
     }
-    
+
     throw new ProviderError(
       `Provider operation failed after ${this.maxRetries} retries`,
       this.connection?.url,
@@ -131,15 +128,11 @@ export class RetryableProvider extends ethers.providers.JsonRpcProvider {
    * Clone this provider with new retry options
    */
   cloneWithOptions(options: RetryableProviderOptions): RetryableProvider {
-    return new RetryableProvider(
-      this.connection?.url,
-      this.network,
-      {
-        maxRetries: options.maxRetries ?? this.maxRetries,
-        initialRetryDelay: options.initialRetryDelay ?? this.initialRetryDelay,
-        maxRetryDelay: options.maxRetryDelay ?? this.maxRetryDelay,
-        retryJitter: options.retryJitter ?? this.retryJitter,
-      }
-    );
+    return new RetryableProvider(this.connection?.url, this.network, {
+      maxRetries: options.maxRetries ?? this.maxRetries,
+      initialRetryDelay: options.initialRetryDelay ?? this.initialRetryDelay,
+      maxRetryDelay: options.maxRetryDelay ?? this.maxRetryDelay,
+      retryJitter: options.retryJitter ?? this.retryJitter,
+    });
   }
 }

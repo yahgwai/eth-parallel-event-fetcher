@@ -1,15 +1,17 @@
 import pLimit from 'p-limit';
-import { ParallelExecutionOptions, TaskFunction, TaskResult, BlockRange } from '../../types';
+import { ParallelExecutionOptions, TaskFunction, BlockRange } from '../../types';
 import { BlockRangeError } from '../errors';
 
 /**
  * Default options for parallel execution
  */
-const DEFAULT_PARALLEL_OPTIONS: Required<Pick<ParallelExecutionOptions, 'concurrency' | 'continueOnError' | 'maxRetries' | 'showProgress'>> = {
+const DEFAULT_PARALLEL_OPTIONS: Required<
+  Pick<ParallelExecutionOptions, 'concurrency' | 'continueOnError' | 'maxRetries' | 'showProgress'>
+> = {
   concurrency: 5,
   continueOnError: false,
   maxRetries: 3,
-  showProgress: true
+  showProgress: true,
 };
 
 /**
@@ -21,7 +23,7 @@ function isRateLimitError(error: Error): boolean {
     errorMsg.includes('429') ||
     errorMsg.includes('rate limit') ||
     errorMsg.includes('too many requests') ||
-    errorMsg.includes('exceeded') && errorMsg.includes('capacity') ||
+    (errorMsg.includes('exceeded') && errorMsg.includes('capacity')) ||
     errorMsg.includes('throttled')
   );
 }
@@ -55,11 +57,11 @@ export class TaskQueue<T> {
   getAllResults(): (T | undefined)[] {
     const resultArray: (T | undefined)[] = [];
     const maxIndex = Math.max(...Array.from(this.results.keys()), -1);
-    
+
     for (let i = 0; i <= maxIndex; i++) {
       resultArray.push(this.results.get(i));
     }
-    
+
     return resultArray;
   }
 
@@ -110,9 +112,9 @@ export class ParallelExecutor<T> {
       label: options.label ?? 'Tasks',
       onProgress: options.onProgress,
       retryDelay: options.retryDelay ?? 1000,
-      maxRetryDelay: options.maxRetryDelay ?? 60000
+      maxRetryDelay: options.maxRetryDelay ?? 60000,
     };
-    
+
     this.currentConcurrency = this.options.concurrency;
     this.taskQueue = new TaskQueue<T>();
   }
@@ -126,8 +128,8 @@ export class ParallelExecutor<T> {
     }
 
     const limit = pLimit(this.currentConcurrency);
-    
-    const limitedTasks = tasks.map((task, index) => 
+
+    const limitedTasks = tasks.map((task, index) =>
       limit(async () => {
         try {
           const result = await this.executeWithRetry(task, index);
@@ -136,7 +138,7 @@ export class ParallelExecutor<T> {
           return result;
         } catch (error) {
           this.handleTaskError(error, index);
-          
+
           if (this.options.continueOnError) {
             this.taskQueue.incrementCompleted();
             this.reportProgress(tasks.length);
@@ -150,12 +152,14 @@ export class ParallelExecutor<T> {
 
     try {
       await Promise.all(limitedTasks);
-      
+
       if (this.taskQueue.hasErrors() && this.options.continueOnError) {
-        console.warn(`Parallel execution completed with ${this.taskQueue.getErrors().length} errors`);
+        console.warn(
+          `Parallel execution completed with ${this.taskQueue.getErrors().length} errors`
+        );
       }
-      
-      return this.taskQueue.getAllResults().filter(result => result !== undefined);
+
+      return this.taskQueue.getAllResults().filter((result) => result !== undefined);
     } catch (error) {
       console.error(`Parallel execution failed:`, error);
       throw error;
@@ -167,7 +171,7 @@ export class ParallelExecutor<T> {
    */
   private async executeWithRetry(task: TaskFunction<T>, index: number): Promise<T> {
     let lastError: Error | null = null;
-    
+
     for (let attempt = 0; attempt <= this.options.maxRetries; attempt++) {
       try {
         const result = await task();
@@ -175,13 +179,13 @@ export class ParallelExecutor<T> {
         return result;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (attempt < this.options.maxRetries) {
           await this.handleRetry(lastError, index, attempt);
         }
       }
     }
-    
+
     throw lastError || new Error(`Task ${index} failed after ${this.options.maxRetries} retries`);
   }
 
@@ -190,31 +194,35 @@ export class ParallelExecutor<T> {
    */
   private async handleRetry(error: Error, index: number, attempt: number): Promise<void> {
     const isRateLimit = isRateLimitError(error);
-    
+
     if (isRateLimit) {
       this.handleRateLimit();
       const delay = Math.min(
         2000 * Math.pow(2, attempt) * (1 + Math.random() * 0.3),
         this.options.maxRetryDelay
       );
-      
+
       if (this.options.showProgress) {
         const reduced = this.taskQueue.isRateLimited() ? 'Reduced concurrency. ' : '';
-        console.warn(`Rate limit on task ${index} (attempt ${attempt + 1}/${this.options.maxRetries + 1}). ${reduced}Retrying in ${Math.round(delay/1000)}s`);
+        console.warn(
+          `Rate limit on task ${index} (attempt ${attempt + 1}/${this.options.maxRetries + 1}). ${reduced}Retrying in ${Math.round(delay / 1000)}s`
+        );
       }
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
     } else {
       const delay = Math.min(
         this.options.retryDelay * Math.pow(2, attempt),
         this.options.maxRetryDelay
       );
-      
+
       if (this.options.showProgress) {
-        console.warn(`Task ${index} failed (attempt ${attempt + 1}/${this.options.maxRetries + 1}): ${error.message}`);
+        console.warn(
+          `Task ${index} failed (attempt ${attempt + 1}/${this.options.maxRetries + 1}): ${error.message}`
+        );
       }
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
@@ -223,14 +231,16 @@ export class ParallelExecutor<T> {
    */
   private handleRateLimit(): void {
     this.consecutiveRateLimitErrors++;
-    
+
     if (this.consecutiveRateLimitErrors >= 3 && this.currentConcurrency > 1) {
       const newConcurrency = Math.max(1, Math.floor(this.currentConcurrency * 0.7));
-      
+
       if (this.options.showProgress) {
-        console.warn(`Reducing concurrency from ${this.currentConcurrency} to ${newConcurrency} due to rate limiting`);
+        console.warn(
+          `Reducing concurrency from ${this.currentConcurrency} to ${newConcurrency} due to rate limiting`
+        );
       }
-      
+
       this.currentConcurrency = newConcurrency;
       this.taskQueue.setRateLimited(true);
     }
@@ -252,14 +262,15 @@ export class ParallelExecutor<T> {
    */
   private reportProgress(totalTasks: number): void {
     const completed = this.taskQueue.getCompletedCount();
-    
+
     if (this.options.onProgress) {
       this.options.onProgress(completed, totalTasks);
     }
-    
-    if (this.options.showProgress && 
-        (completed % Math.max(1, Math.floor(totalTasks / 10)) === 0 || 
-         completed === totalTasks)) {
+
+    if (
+      this.options.showProgress &&
+      (completed % Math.max(1, Math.floor(totalTasks / 10)) === 0 || completed === totalTasks)
+    ) {
       const percentage = ((completed / totalTasks) * 100).toFixed(1);
       console.log(`${this.options.label}: ${completed}/${totalTasks} (${percentage}%)`);
     }
@@ -268,7 +279,7 @@ export class ParallelExecutor<T> {
 
 /**
  * Execute an array of async tasks in parallel with concurrency control and retry logic
- * 
+ *
  * This function maintains backward compatibility while using the new OOP implementation
  */
 export async function executeInParallel<T>(
@@ -299,17 +310,19 @@ export function createBlockRangeChunks(
   chunkSize: number = 10000
 ): BlockRange[] {
   if (startBlock > endBlock) {
-    throw new BlockRangeError(
-      'Start block must be less than or equal to end block',
-      { fromBlock: startBlock, toBlock: endBlock, chunkSize }
-    );
+    throw new BlockRangeError('Start block must be less than or equal to end block', {
+      fromBlock: startBlock,
+      toBlock: endBlock,
+      chunkSize,
+    });
   }
 
   if (chunkSize <= 0) {
-    throw new BlockRangeError(
-      'Chunk size must be positive',
-      { fromBlock: startBlock, toBlock: endBlock, chunkSize }
-    );
+    throw new BlockRangeError('Chunk size must be positive', {
+      fromBlock: startBlock,
+      toBlock: endBlock,
+      chunkSize,
+    });
   }
 
   const chunks: BlockRange[] = [];

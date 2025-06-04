@@ -8,12 +8,12 @@ export * from '../types';
 export * from './utils';
 
 // Export configuration system
-export { 
-  DEFAULT_CONFIG, 
-  ENV_VARS, 
-  loadConfigFromEnv, 
-  createConfig, 
-  validateConfig 
+export {
+  DEFAULT_CONFIG,
+  ENV_VARS,
+  loadConfigFromEnv,
+  createConfig,
+  validateConfig,
 } from './config';
 
 // Export error types

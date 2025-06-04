@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+docs/
+*.js
+!eslint.config.js
+!jest.config.js
