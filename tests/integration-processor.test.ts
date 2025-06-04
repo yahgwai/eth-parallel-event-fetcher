@@ -11,7 +11,7 @@ interface TestEvent extends RawEvent {
 }
 
 describe('Integration - Custom Event Processing', () => {
-  let fetcher: GenericEventFetcher<TestEvent, any>;
+  let fetcher: GenericEventFetcher<TestEvent>;
   let provider: ethers.providers.JsonRpcProvider;
   let usdcContract: ContractInterface;
   
@@ -166,21 +166,21 @@ describe('Integration - Custom Event Processing', () => {
     const results = [summary];
 
     expect(results).toHaveLength(1);
-    const summary = results[0];
+    const summaryResult = results[0];
     
-    expect(summary).toHaveProperty('totalEvents');
-    expect(summary).toHaveProperty('totalAmount');
-    expect(summary).toHaveProperty('uniqueRecipients');
-    expect(summary).toHaveProperty('blockRange');
+    expect(summaryResult).toHaveProperty('totalEvents');
+    expect(summaryResult).toHaveProperty('totalAmount');
+    expect(summaryResult).toHaveProperty('uniqueRecipients');
+    expect(summaryResult).toHaveProperty('blockRange');
     
-    expect(typeof summary.totalEvents).toBe('number');
-    expect(typeof summary.totalAmount).toBe('string');
-    expect(typeof summary.uniqueRecipients).toBe('number');
+    expect(typeof summaryResult.totalEvents).toBe('number');
+    expect(typeof summaryResult.totalAmount).toBe('string');
+    expect(typeof summaryResult.uniqueRecipients).toBe('number');
     
-    if (summary && summary.blockRange) {
-      expect(typeof summary.blockRange.min).toBe('number');
-      expect(typeof summary.blockRange.max).toBe('number');
-      expect(summary.blockRange.min).toBeLessThanOrEqual(summary.blockRange.max);
+    if (summaryResult && summaryResult.blockRange) {
+      expect(typeof summaryResult.blockRange.min).toBe('number');
+      expect(typeof summaryResult.blockRange.max).toBe('number');
+      expect(summaryResult.blockRange.min).toBeLessThanOrEqual(summaryResult.blockRange.max);
     }
   }, 30000);
 });

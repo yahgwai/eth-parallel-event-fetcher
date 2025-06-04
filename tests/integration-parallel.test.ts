@@ -92,7 +92,7 @@ describe('Integration - Parallel Processing', () => {
   }, 45000);
 
   // This test is mentioned in BUGFIXES.md as demonstrating the ordering issue
-  it('should maintain event order across chunks', async () => {
+  it('should maintain event order across chunks with high concurrency', async () => {
     // Use a custom fetcher with smaller chunks to ensure multiple chunks are used
     const customFetcher = new GenericEventFetcher<TestEvent>({
       ...DEFAULT_CONFIG,
@@ -205,7 +205,7 @@ describe('Integration - Parallel Processing', () => {
   }, 60000);
 });
 
-describe('Integration - Event Order Test Isolated', () => {
+describe('Integration - Large Scale Event Order Test', () => {
   let usdcContract: ContractInterface;
 
   beforeAll(async () => {
@@ -233,7 +233,7 @@ describe('Integration - Event Order Test Isolated', () => {
     };
   });
 
-  it('should maintain event order across chunks', async () => {
+  it('should maintain event order with 100 parallel chunks', async () => {
     // Final: Original parameters - 10000 blocks, chunkSize 100, concurrency 10 (100 chunks, 10 parallel)
     const customFetcher = new GenericEventFetcher<TestEvent>({
       ...DEFAULT_CONFIG,

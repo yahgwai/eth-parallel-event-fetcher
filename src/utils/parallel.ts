@@ -241,7 +241,9 @@ export class ParallelExecutor<T> {
    */
   private handleTaskError(error: unknown, index: number): void {
     const errorObj = error instanceof Error ? error : new Error(String(error));
-    console.error(`Task ${index} failed after all retries:`, errorObj);
+    if (this.options.showProgress) {
+      console.error(`Task ${index} failed after all retries:`, errorObj);
+    }
     this.taskQueue.addError(errorObj);
   }
 

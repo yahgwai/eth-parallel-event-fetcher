@@ -58,14 +58,14 @@ export function isEventWithName<TName extends string>(
 }
 
 /**
- * Create a typed event processor
+ * Helper function to transform events with contract address context
  */
-export function createTypedProcessor<TEvent extends RawEvent, TProcessed>(
-  processEvent: (event: TEvent, contractAddress: string) => TProcessed
-) {
-  return (events: TEvent[], contractAddress: string): TProcessed[] => {
-    return events.map(event => processEvent(event, contractAddress));
-  };
+export function transformEventsWithAddress<TEvent extends RawEvent, TProcessed>(
+  events: TEvent[],
+  contractAddress: string,
+  transform: (event: TEvent, contractAddress: string) => TProcessed
+): TProcessed[] {
+  return events.map(event => transform(event, contractAddress));
 }
 
 /**
