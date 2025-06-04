@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.1.4...v1.2.0) (2025-06-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* Minimum Node.js version is now 14.0.0
+
+### Build System
+
+* add comprehensive CI/CD and code quality infrastructure ([29780ab](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/29780abfc62b8c340025fa693de1a01c3c79ad99))
+
 ### [1.1.4](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.1.3...v1.1.4) (2025-06-04)
 
 ### Bug Fixes
