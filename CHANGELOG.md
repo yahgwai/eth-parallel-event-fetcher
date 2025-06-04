@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.6](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.5...v1.2.6) (2025-06-04)
+
+
+### Bug Fixes
+
+* add security-events permission to CodeQL workflow ([da5caee](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/da5caee3c73e34e1dbbeeef7fdcce6368396c297))
+
 ### [1.2.5](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.4...v1.2.5) (2025-06-04)
 
 ### Documentation
