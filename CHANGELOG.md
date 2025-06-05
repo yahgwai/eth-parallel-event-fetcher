@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.11](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.10...v1.2.11) (2025-06-05)
+
+
+### Bug Fixes
+
+* skip git hooks setup in CI environments ([f77ea0b](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/f77ea0b2359288d52341abe3e65a79f87ebea69f))
+
+
+### Chores
+
+* remove Dependabot configuration and add Git hooks ([34b626e](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/34b626e5ed3c24a151da49e0277d700c9787fab2))
+
 ### [1.2.10](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.9...v1.2.10) (2025-06-05)
 
 
