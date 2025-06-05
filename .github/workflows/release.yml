@@ -37,23 +37,6 @@ jobs:
         fetch-depth: 0  # Need full history for standard-version
         token: ${{ secrets.GITHUB_TOKEN }}
     
-    # Check if this is a dependabot commit and skip if so
-    - name: Check for dependabot
-      run: |
-        LAST_COMMIT_MSG=$(git log -1 --pretty=format:'%s')
-        LAST_COMMIT_AUTHOR=$(git log -1 --pretty=format:'%an')
-        echo "Last commit author: $LAST_COMMIT_AUTHOR"
-        echo "Last commit message: $LAST_COMMIT_MSG"
-        
-        # Skip if it's a dependabot commit (author or commit message pattern)
-        if [[ "$LAST_COMMIT_AUTHOR" == "dependabot[bot]" ]] || [[ "$LAST_COMMIT_MSG" =~ ^chore\(deps.*\): ]]; then
-          echo "This is a dependency update commit. Skipping release."
-          echo "::notice::Skipping release for dependency update"
-          # Create a dummy file to signal other steps to skip
-          touch .skip-release
-          exit 0
-        fi
-    
     - uses: actions/setup-node@v4
       with:
         node-version: '20'
