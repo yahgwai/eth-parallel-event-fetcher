@@ -19,7 +19,8 @@
     "release:patch": "npm run prerelease && npm test && npm run clean && standard-version --release-as patch && ./publish.sh",
     "release:minor": "npm run prerelease && npm test && npm run clean && standard-version --release-as minor && ./publish.sh",
     "release:major": "npm run prerelease && npm test && npm run clean && standard-version --release-as major && ./publish.sh",
-    "release:first": "npm run prerelease && npm test && npm run clean && standard-version --first-release && ./publish.sh"
+    "release:first": "npm run prerelease && npm test && npm run clean && standard-version --first-release && ./publish.sh",
+    "postinstall": "./.githooks/setup.sh"
   },
   "keywords": [
     "ethereum",

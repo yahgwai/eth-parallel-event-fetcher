@@ -1,4 +1,4 @@
-# Ethereum Parallel Fetcher
+# Ethereum Parallel Event Fetcher
 
 [![CI](https://github.com/yahgwai/ethereum-parallel-fetcher/actions/workflows/test.yml/badge.svg)](https://github.com/yahgwai/ethereum-parallel-fetcher/actions/workflows/test.yml)
 [![npm version](https://badge.fury.io/js/ethereum-parallel-fetcher.svg)](https://www.npmjs.com/package/ethereum-parallel-fetcher)
