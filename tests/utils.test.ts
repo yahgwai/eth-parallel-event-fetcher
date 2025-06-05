@@ -1,7 +1,6 @@
 import { executeInParallel, chunkArray, createBlockRangeChunks } from '../src/utils/parallel';
 import { createProvider } from '../src/utils/provider';
 import { BlockRangeError, ProviderError } from '../src/errors';
-import { ProgressTracker } from '../src/utils/progress';
 
 // Mock p-limit since we have it configured in Jest
 jest.mock('p-limit', () => {
@@ -175,81 +174,6 @@ describe.skip('Provider Utils', () => {
       // This test validates that provider requires a URL
       await expect(createProvider({})).rejects.toThrow(ProviderError);
       await expect(createProvider({})).rejects.toThrow('Provider URL is required');
-    });
-  });
-});
-
-describe.skip('Progress Utils', () => {
-  describe('ProgressTracker', () => {
-    let logSpy: jest.Mock;
-    let tracker: ProgressTracker;
-
-    beforeEach(() => {
-      logSpy = jest.fn();
-      tracker = new ProgressTracker(100, 'Test', 1000, logSpy);
-    });
-
-    test('should initialize with correct values', () => {
-      expect(tracker.getProgress()).toBe(0);
-      expect(tracker.getProgressPercent()).toBe(0);
-    });
-
-    test('should update progress correctly', () => {
-      tracker.update(25);
-      expect(tracker.getProgress()).toBe(0.25);
-      expect(tracker.getProgressPercent()).toBe(25);
-    });
-
-    test('should log progress when forced', () => {
-      tracker.update(25, true);
-      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Test: 25/100 (25.00%)'));
-    });
-
-    test('should not log progress too frequently', () => {
-      tracker.update(10);
-      tracker.update(10);
-      tracker.update(10);
-
-      // Should only log once at initialization
-      expect(logSpy).toHaveBeenCalledTimes(0);
-    });
-
-    test('should log when reaching 100%', () => {
-      tracker.update(100);
-      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Test: 100/100 (100.00%)'));
-    });
-
-    test('should format time correctly', () => {
-      // Test private method through complete()
-      tracker.update(100);
-      tracker.complete();
-
-      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Test completed in'));
-    });
-
-    test('should handle completion correctly', () => {
-      tracker.update(50);
-      tracker.complete();
-
-      expect(tracker.getProgress()).toBe(1);
-      expect(tracker.getProgressPercent()).toBe(100);
-    });
-
-    test('should include time estimates in progress messages', () => {
-      // Fast forward time to test time estimates
-      jest.useFakeTimers();
-
-      const tracker = new ProgressTracker(100, 'Test', 0, logSpy);
-
-      // Simulate progress over time
-      jest.advanceTimersByTime(1000);
-      tracker.update(25, true);
-
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/Test: 25\/100 \(25\.00%\) \(.*elapsed.*remaining\)/)
-      );
-
-      jest.useRealTimers();
     });
   });
 });
