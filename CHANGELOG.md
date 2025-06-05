@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.10](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.9...v1.2.10) (2025-06-05)
+
+
+### Code Refactoring
+
+* remove unused ProgressTracker utility ([3b5211a](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/3b5211aaf94f2fc8b26ed1c92c3b2c3cd7b96a8c))
+
+
+### Styles
+
+* fix formatting in tests/utils.test.ts ([e4ef02a](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/e4ef02a21ad7cc2580979a8e47ab6cc2249b2167))
+
 ### [1.2.9](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.8...v1.2.9) (2025-06-04)
 
 
