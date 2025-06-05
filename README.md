@@ -1,7 +1,7 @@
 # Ethereum Parallel Event Fetcher
 
-[![CI](https://github.com/yahgwai/ethereum-parallel-fetcher/actions/workflows/test.yml/badge.svg)](https://github.com/yahgwai/ethereum-parallel-fetcher/actions/workflows/test.yml)
-[![npm version](https://badge.fury.io/js/ethereum-parallel-fetcher.svg)](https://www.npmjs.com/package/ethereum-parallel-fetcher)
+[![CI](https://github.com/yahgwai/eth-parallel-event-fetcher/actions/workflows/test.yml/badge.svg)](https://github.com/yahgwai/eth-parallel-event-fetcher/actions/workflows/test.yml)
+[![npm version](https://badge.fury.io/js/eth-parallel-event-fetcher.svg)](https://www.npmjs.com/package/eth-parallel-event-fetcher)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A TypeScript library for parallel fetching of Ethereum contract events with configurable concurrency, rate limiting, and block range chunking.
@@ -19,13 +19,13 @@ A TypeScript library for parallel fetching of Ethereum contract events with conf
 ## Installation
 
 ```bash
-npm install ethereum-parallel-fetcher
+npm install eth-parallel-event-fetcher
 ```
 
 ## Quick Start
 
 ```typescript
-import { GenericEventFetcher } from 'ethereum-parallel-fetcher';
+import { GenericEventFetcher } from 'eth-parallel-event-fetcher';
 import { ethers } from 'ethers';
 
 // Create provider
@@ -57,7 +57,7 @@ const processedEvents = events.map((event) => ({
 ### Constructor Configuration
 
 ```typescript
-import { GenericEventFetcher, FetcherConfig } from 'ethereum-parallel-fetcher';
+import { GenericEventFetcher, FetcherConfig } from 'eth-parallel-event-fetcher';
 
 const config: FetcherConfig = {
   // Concurrency and performance
@@ -189,7 +189,7 @@ interface EventFetcherOptions<TAddress = string> {
 ### Basic Event Fetching
 
 ```typescript
-import { GenericEventFetcher } from 'ethereum-parallel-fetcher';
+import { GenericEventFetcher } from 'eth-parallel-event-fetcher';
 import { ethers } from 'ethers';
 
 // Setup
