@@ -1,6 +1,6 @@
 import { testProvider, usdcContract, USDC_ADDRESS, TEST_FROM_BLOCK } from './setup';
 
-describe.skip('Test Environment Connectivity', () => {
+describe('Test Environment Connectivity', () => {
   test('should connect to hardhat fork', async () => {
     const network = await testProvider.getNetwork();
     expect(network.chainId).toBe(31337); // Hardhat local network chain ID
