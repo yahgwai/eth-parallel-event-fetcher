@@ -21,35 +21,15 @@ on:
           - auto
 
 jobs:
-  check:
-    name: Check if release needed
-    runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      github.event.workflow_run.conclusion == 'success'
-    outputs:
-      should_release: ${{ steps.check_commit.outputs.should_release }}
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 1
-    - name: Check last commit
-      id: check_commit
-      run: |
-        LAST_COMMIT_MSG=$(git log -1 --pretty=%s)
-        echo "Last commit message: $LAST_COMMIT_MSG"
-        if [[ "$LAST_COMMIT_MSG" == "chore(release):"* ]]; then
-          echo "This is a release commit, skipping to prevent loop"
-          echo "should_release=false" >> $GITHUB_OUTPUT
-        else
-          echo "should_release=true" >> $GITHUB_OUTPUT
-        fi
-
   release:
     name: Release
-    needs: check
-    if: needs.check.outputs.should_release == 'true'
     runs-on: ubuntu-latest
+    # Only run if tests passed (or manual trigger) AND not a release commit
+    if: |
+      (github.event_name == 'workflow_dispatch' || 
+       github.event.workflow_run.conclusion == 'success') &&
+      (github.event_name != 'push' || 
+       !startsWith(github.event.head_commit.message, 'chore(release):'))
     permissions:
       contents: write
       id-token: write
