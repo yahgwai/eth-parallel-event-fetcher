@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.2](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.4.1...v1.4.2) (2025-06-06)
+
+
+### Bug Fixes
+
+* add [skip ci] to release commits to prevent unnecessary workflow runs ([40c7a75](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/40c7a753aa57304ef29338cd16006dfcd684d158)), closes [#16](https://github.com/yahgwai/eth-parallel-event-fetcher/issues/16)
+
+
+### Chores
+
+* remove unnecessary release process test file ([f69fd7b](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/f69fd7b993073c21d59adaf65d6e418f68d1d834))
+
 ### [1.4.1](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.4.0...v1.4.1) (2025-06-06)
 
 
