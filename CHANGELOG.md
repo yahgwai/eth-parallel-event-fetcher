@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.1](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.4.0...v1.4.1) (2025-06-06)
+
+
+### Bug Fixes
+
+* update package-lock.json version to 1.4.0 ([388bd96](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/388bd969b3a2af83f7a0bb4e79bfd358717551f1))
+
 ## [1.4.0](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.3.0...v1.4.0) (2025-06-06)
 
 
