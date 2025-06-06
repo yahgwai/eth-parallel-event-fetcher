@@ -47,6 +47,8 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
+        # Ensure the RELEASE_TOKEN is used for pushes
+        git remote set-url origin https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/${{ github.repository }}.git
     
     - run: npm ci
     
@@ -94,7 +96,7 @@ jobs:
     # Push commits and tags
     - name: Push changes
       run: |
-        # The checkout action configures git to use the token
+        # Use the RELEASE_TOKEN to bypass branch protection
         git push --follow-tags origin main
     
     # Create GitHub release using gh CLI (matches manual process)
