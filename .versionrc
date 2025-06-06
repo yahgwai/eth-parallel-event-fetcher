@@ -14,5 +14,6 @@
   ],
   "commitUrlFormat": "https://github.com/yahgwai/eth-parallel-event-fetcher/commit/{{hash}}",
   "compareUrlFormat": "https://github.com/yahgwai/eth-parallel-event-fetcher/compare/{{previousTag}}...{{currentTag}}",
-  "issueUrlFormat": "https://github.com/yahgwai/eth-parallel-event-fetcher/issues/{{id}}"
+  "issueUrlFormat": "https://github.com/yahgwai/eth-parallel-event-fetcher/issues/{{id}}",
+  "releaseCommitMessageFormat": "chore(release): {{currentTag}} [skip ci]"
 }
