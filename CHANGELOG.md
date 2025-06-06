@@ -2,6 +2,129 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.0.0 (2025-06-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* Package renamed from ethereum-parallel-fetcher to eth-parallel-event-fetcher
+
+- Rename npm package to match GitHub repository name
+- Revert to using GITHUB_TOKEN in release workflow
+* Minimum Node.js version is now 14.0.0
+* fetchEvents() no longer accepts a processor parameter.
+Events are returned directly, allowing users to process them after fetching.
+
+- Remove processor parameter from fetchEvents()
+- Return raw events instead of processed events
+- Simplify API from 3 type parameters to 2
+- Update all tests and documentation
+
+### Features
+
+* rename package to eth-parallel-event-fetcher ([d3685d9](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/d3685d9db4feb09c0048cc6053fb66afd9f0f572))
+
+
+### Bug Fixes
+
+* add check to prevent release workflow loops ([917c0e0](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/917c0e09bc00ac535dab637b01a857e1ad0b50a1))
+* add security-events permission to CodeQL workflow ([37265d1](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/37265d164422dd3db47c4fc4b1bcf0c910d70f5f))
+* configure git to use RELEASE_TOKEN for pushing to bypass branch protection ([6e6b49e](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/6e6b49eb4d62136c41be23fa16866b3cce5bc659))
+* correct changelog extraction regex for release notes ([81d4cc3](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/81d4cc3c08cee97af2316ca48079bdd9f31e27c1))
+* correct CI workflow name in release trigger ([16e3616](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/16e36167b1597f14937ec996f87e451c68c2e1b1))
+* correct CodeQL initialization order in security workflow ([e5d65df](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/e5d65df4e8216e646b7c236ea980c4fbefded542))
+* correct repository URLs to match actual GitHub repo name ([0d616ea](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/0d616ea14cbf126ab605bb2a1895f48b3ed09932))
+* correct workflow names and add build step for CodeQL ([8016362](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/8016362717cc25d282dd8713a2d2d4635ca61a16))
+* ensure publish script runs after standard-version ([3325ece](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/3325ece12a4113798c54c7f6c301db93f116318f))
+* improve changelog extraction to handle all header levels ([bd19d5c](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/bd19d5cd86b6378e674365581557920767cee6ce))
+* prepare for initial release of renamed package ([d4d9325](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/d4d9325931e9f30f21848768d63ea2365860f1a0))
+* remove forceExit flag from Jest tests ([a0451b6](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/a0451b64fd4ce85e04cb2199d23a1372a859f81f))
+* remove unused ts-expect-error directive in test setup ([174201d](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/174201d9b2f3e3539d2b89ce7adafb41ecbe4427))
+* revert to v1.x series and clean up v2.x releases ([3e1fcd2](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/3e1fcd2fe5651d27b3ff71adf77f26429aec84a1))
+* skip CI/security workflows for release commits ([76b1bf7](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/76b1bf737ddca2291d7393a9cd1878020284d14f))
+* skip git hooks setup in CI environments ([58f6408](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/58f64084b64baa268f801564ececfd362c6225be))
+* skip release workflow for dependabot commits ([2058543](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/2058543b1781e0fb8022c658407747da37c896c5))
+* use GitHub App token instead of PAT for release workflow ([32b1606](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/32b1606a357cd4ae0d41858934180930e437a264))
+
+
+* Remove processor pattern from event fetcher API ([ec2dcb5](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/ec2dcb55fd55aa363c5d59185c4a6a7610c5db97))
+
+
+### Build System
+
+* add comprehensive CI/CD and code quality infrastructure ([af46611](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/af46611d30f851e6300aed5561a48e51b04f89b2))
+* add pre-release checks to prevent releases with uncommitted changes ([fd57448](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/fd57448e2f8f4d2da6750e21ccd3be69875a76e9))
+* adopt conventional commits and standard-version ([8f252db](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/8f252db328ae4a19e51c821f155cab7530dbda78))
+
+
+### Tests
+
+* verify pre-commit hooks work correctly ([a95f814](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/a95f81464a27fb269e8c3f200563762781753919))
+
+
+### Styles
+
+* fix formatting in tests/utils.test.ts ([a372df9](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/a372df90cff46c86d3c98bf2869792c57078c473))
+
+
+### Documentation
+
+* consolidate changelog into single 1.2.4 release ([a7d1ce8](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/a7d1ce884c1fa59b6e744eb2da1983601abce9ed))
+* fix broken repository and package links in README ([1c7cdac](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/1c7cdac8399aeb10b98c79eaa69416ce0a6a01ad))
+
+
+### Continuous Integration
+
+* automate releases on push to main ([0a97605](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/0a9760544050b69a9e40ee9fb21993d3a081ed89))
+* improve CI/CD workflow architecture ([4fa80a4](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/4fa80a461dddeeab181e9a7bc61356ff6bded2ac))
+* use release token for pushing to protected main branch ([2b9341c](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/2b9341c0a8bcb72f8485c4ace9b041765760ef67))
+* use RELEASE_TOKEN for workflow checkout ([#11](https://github.com/yahgwai/eth-parallel-event-fetcher/issues/11)) ([63a1ec3](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/63a1ec3d6c23f56ff59502e5125cb0f6e24739b0))
+
+
+### Code Refactoring
+
+* remove unused ProgressTracker utility ([2e60e06](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/2e60e0655bb00cf18f1cb5c83f917834f6250cce))
+* rename release.sh to publish.sh for clarity ([2170e84](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/2170e84fe4bbb77c7f0cd30f44eb3e6a25e3055e))
+* simplify release workflow commit check ([5458eee](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/5458eeeb7e3c5e1563e66372f2924a6027eb67e6))
+
+
+### Chores
+
+* disable dependabot auto-rebase to prevent retry loops ([59a53f2](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/59a53f200ccb4f1f83340f82636abd7a2ae6a7dc))
+* **release:** 0.1.0 ([009b5b5](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/009b5b532f68786fdd47ea8f878600d138dbfe11))
+* **release:** 1.1.1 ([8c10268](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/8c10268789de8c9246713494120b9addfd8eab37))
+* **release:** 1.1.2 ([152ee01](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/152ee0196644a1c4062877fa7ea3f50439416357))
+* **release:** 1.1.3 ([4165b68](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/4165b68f26b04cc9f12ddd83bf6a2a78614acf90))
+* **release:** 1.1.4 ([f1b8757](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/f1b87579c766777e4d1921c50c84ebc2789376b6))
+* **release:** 1.2.0 ([4b72f1d](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/4b72f1d9c5c70c8b81b225fbf8c51bd48724524f))
+* **release:** 1.2.1 ([617d935](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/617d935f82d0f0b661f0b8eb83f988cca741692c))
+* **release:** 1.2.10 ([25902bb](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/25902bba13a82842ff58f9b2ab596eb0fcefbcf2))
+* **release:** 1.2.11 ([56d0b84](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/56d0b846e7085880f82ca2b6b3937cdd7f7f06ac))
+* **release:** 1.2.12 ([85f77ff](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/85f77ff9e38345f4d34b05f894db91b748291dec))
+* **release:** 1.2.3 ([e39fb47](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/e39fb4761ff89b110901b30ac027ecf9fb3cc00e))
+* **release:** 1.2.4 ([98af495](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/98af495011417b089351e19622641c90847a25d2))
+* **release:** 1.2.5 ([46caf00](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/46caf00971035977599baa86d133dac4419cc866))
+* **release:** 1.2.6 ([65314bf](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/65314bf3de4bf4ebe4873b8ff9686c16db2d841d))
+* **release:** 1.2.7 ([7b58708](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/7b58708556b03b6ad8cba3a8d8b5e5a5ef1edf40))
+* **release:** 1.2.8 ([001683b](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/001683b660eebfc11086215f02e745efaddcf95c))
+* **release:** 1.2.9 ([2bfd72b](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/2bfd72b53b2523788094254e446d213708e77ea5))
+* **release:** 2.0.0 ([84ed72b](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/84ed72bc9e22c5f84127f9af5b2bc34822af8133))
+* **release:** 2.0.0 ([eb68c73](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/eb68c73672432cf669d3625d86f392abcf3fecec))
+* **release:** 2.0.1 ([0f60f81](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/0f60f81f82abf537ebde04bfe7d371492eec29c9))
+* **release:** 2.0.10 ([7da9cb9](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/7da9cb9c0cbeec3954ec681dc51cdce57e8bd83e))
+* **release:** 2.0.2 ([fad4916](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/fad491615949da828d9751dfdbc8c919787bc3b8))
+* **release:** 2.0.3 ([2c5b667](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/2c5b6673399328f47c013a4866bcd44334cfb363))
+* **release:** 2.0.4 ([0d084b4](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/0d084b40c1656d20f5e32e3c05de3915ff331e46))
+* **release:** 2.0.5 ([370c3cb](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/370c3cba15e15f6a5df4067698addf77d598b212))
+* **release:** 2.0.6 ([3a2de69](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/3a2de69a6db592dcd760d35e1288e2d908b5def2))
+* **release:** 2.0.7 ([6c4e6c5](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/6c4e6c56dd1682e82191d6e81eb7b4bc5bd342d5))
+* **release:** 2.0.8 ([6d7a687](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/6d7a6878f2c3f88086e1748e0e26dd0959845491))
+* **release:** 2.0.9 ([8f7a1a6](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/8f7a1a6fb68dbc3be19c0ec0d4f5c9b7011c122f))
+* remove Dependabot configuration and add Git hooks ([4c7e8e4](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/4c7e8e42249ddfe023edebd69e95ff349779a1c6))
+* reset the version number and added a convential commits format message ([35ef072](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/35ef072e4ae50f9182ead478a945187b387bd203))
+* resolve conflicts with main by keeping v1.3.0 ([b467289](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/b46728953e0150080bce34cbb0ceb6d34939ef69))
+* standardize changelog bullet points to asterisks ([2ee9339](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/2ee93399585de37321be6d61e7528457c4609f47))
+
 ## [1.3.0](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.2.12...v1.3.0) (2025-06-06)
 
 
