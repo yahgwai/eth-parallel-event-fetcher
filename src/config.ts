@@ -4,22 +4,13 @@ import { FetcherConfig } from '../types/interfaces';
  * Default configuration values for the event fetcher
  */
 export const DEFAULT_CONFIG: Required<FetcherConfig> = {
-  // Concurrency and performance
   concurrency: 4,
   chunkSize: 10000,
-
-  // Retry configuration
   maxRetries: 3,
   initialRetryDelay: 1000,
-
-  // Rate limiting
   rateLimitPerSecond: 10,
-
-  // Progress tracking
   showProgress: false,
   progressCallback: () => {},
-
-  // Error handling
   continueOnError: true,
   maxLogsPerChunk: 10000,
 };
@@ -44,20 +35,15 @@ export const ENV_VARS = {
 export function loadConfigFromEnv(): Partial<FetcherConfig> {
   const config: Partial<FetcherConfig> = {};
 
-  // Parse numeric values with validation
   const parseNumber = (value: string | undefined, min = 1): number | undefined => {
     if (!value) return undefined;
     const parsed = parseInt(value, 10);
     return !isNaN(parsed) && parsed >= min ? parsed : undefined;
   };
-
-  // Parse boolean values
   const parseBoolean = (value: string | undefined): boolean | undefined => {
     if (!value) return undefined;
     return value.toLowerCase() === 'true' || value === '1';
   };
-
-  // Load and validate environment variables
   const concurrency = parseNumber(process.env[ENV_VARS.CONCURRENCY], 1);
   if (concurrency !== undefined) config.concurrency = concurrency;
 

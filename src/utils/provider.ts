@@ -39,21 +39,14 @@ export async function createProvider(options: ProviderOptions = {}): Promise<Ret
     throw new ProviderError('Provider URL is required');
   }
 
-  // Create retryable provider with the specified URL and retry options
   const provider = new RetryableProvider(url, undefined, {
     maxRetries,
     initialRetryDelay,
     maxRetryDelay,
     retryJitter,
   });
-
-  // Configure provider options
   provider.pollingInterval = pollingInterval;
-
-  // Initialize the provider connection (retry is handled automatically)
-  try {
-    // Verify the connection by getting the network
-    await provider.getNetwork();
+  try {    await provider.getNetwork();
 
     return provider;
   } catch (error) {
@@ -71,10 +64,7 @@ export async function createProvider(options: ProviderOptions = {}): Promise<Ret
 export async function getProviderStatus(
   provider: ethers.providers.JsonRpcProvider
 ): Promise<ProviderStatus> {
-  try {
-    // If provider is already retryable, use it directly
-    // Otherwise, these calls will use the standard provider without retries
-    const [network, blockNumber, isSyncing] = await Promise.all([
+  try {    const [network, blockNumber, isSyncing] = await Promise.all([
       provider.getNetwork(),
       provider.getBlockNumber(),
       provider.send('eth_syncing', []),

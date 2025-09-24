@@ -73,19 +73,13 @@ export class RetryableProvider extends ethers.providers.JsonRpcProvider {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
-        // Only retry if not the last attempt
         if (attempt < this.maxRetries) {
           const isRateLimit = isRateLimitError(lastError);
 
-          // Use longer delays for rate limit errors
           const baseDelay = isRateLimit
             ? Math.max(this.initialRetryDelay * 2, 2000)
             : this.initialRetryDelay;
-
-          // Exponential backoff
           const backoffDelay = Math.min(baseDelay * Math.pow(2, attempt), this.maxRetryDelay);
-
-          // Add random jitter to avoid retry storms
           let finalDelay = backoffDelay;
           if (this.retryJitter) {
             const jitter = isRateLimit ? Math.random() * 0.6 - 0.3 : Math.random() * 0.2 - 0.1;
@@ -96,8 +90,6 @@ export class RetryableProvider extends ethers.providers.JsonRpcProvider {
         }
       }
     }
-
-    // If we've exhausted retries, throw appropriate error
     if (lastError && isRateLimitError(lastError)) {
       throw new RateLimitError(
         `Rate limit exceeded after ${this.maxRetries} retries: ${lastError.message}`,

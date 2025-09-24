@@ -47,24 +47,56 @@ export interface ContractInterface<TAddress extends string = string> {
  * Configuration for event fetching
  */
 export interface FetcherConfig {
-  // Concurrency and performance
   concurrency?: number;
   chunkSize?: number;
-
-  // Retry configuration
   maxRetries?: number;
   initialRetryDelay?: number;
-
-  // Rate limiting
   rateLimitPerSecond?: number;
-
-  // Progress tracking
   showProgress?: boolean;
   progressCallback?: (completed: number, total: number, currentChunk: [number, number]) => void;
-
-  // Error handling
   continueOnError?: boolean;
   maxLogsPerChunk?: number;
+}
+
+/**
+ * Ethereum log filter matching ethers.js Filter interface
+ */
+export interface LogFilter {
+  address?: string;
+  topics?: Array<string | Array<string> | null>;
+  fromBlock?: number | string;
+  toBlock?: number | string;
+  blockHash?: string;
+}
+
+/**
+ * Options for fetchLogs method
+ */
+export interface FetchLogsOptions {
+  chunkSize?: number;
+  concurrency?: number;
+  maxRetries?: number;
+  initialRetryDelay?: number;
+  rateLimitPerSecond?: number;
+  showProgress?: boolean;
+  onProgress?: (completed: number, total: number, chunk: [number, number]) => void;
+  continueOnError?: boolean;
+  maxLogsPerChunk?: number;
+}
+
+/**
+ * Ethereum log interface matching ethers.js Log
+ */
+export interface Log {
+  blockNumber: number;
+  blockHash: string;
+  transactionIndex: number;
+  removed: boolean;
+  address: string;
+  data: string;
+  topics: string[];
+  transactionHash: string;
+  logIndex: number;
 }
 
 /**
@@ -85,6 +117,16 @@ export interface EventFetcherOptions<TAddress extends string = string> {
  */
 export interface ChunkFetchResult<TEvent extends RawEvent = RawEvent> {
   events: TEvent[];
+  chunkRange: [number, number];
+  retries?: number;
+  duration?: number;
+}
+
+/**
+ * Result of a single log chunk fetch operation
+ */
+export interface LogChunkResult {
+  logs: ethers.providers.Log[];
   chunkRange: [number, number];
   retries?: number;
   duration?: number;

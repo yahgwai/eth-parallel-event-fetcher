@@ -4,14 +4,13 @@
 [![npm version](https://badge.fury.io/js/eth-parallel-event-fetcher.svg)](https://www.npmjs.com/package/eth-parallel-event-fetcher)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A TypeScript library for parallel fetching of Ethereum contract events with configurable concurrency, rate limiting, and block range chunking.
+A TypeScript library for parallel fetching of Ethereum logs with configurable concurrency, rate limiting, and block range chunking.
 
 ## Features
 
-- **Parallel Processing**: Fetch events across multiple block ranges simultaneously
+- **Parallel Processing**: Fetch logs across multiple block ranges simultaneously
 - **Automatic Retry Logic**: Built-in retry mechanism with exponential backoff
 - **Progress Tracking**: Real-time progress reporting and callbacks
-- **Generic Interfaces**: Works with any Ethereum contract events
 - **Configurable**: Extensive configuration options for performance tuning
 - **TypeScript Support**: Full type safety and intellisense
 - **Environment Variables**: Configuration via environment variables
@@ -31,25 +30,21 @@ import { ethers } from 'ethers';
 // Create provider
 const provider = new ethers.providers.JsonRpcProvider('your-rpc-url');
 
-// Create contract instance
-const contract = new ethers.Contract(contractAddress, abi, provider);
+// Create fetcher with provider (required)
+const fetcher = new GenericEventFetcher(provider);
 
-// Create fetcher with default configuration
-const fetcher = new GenericEventFetcher();
-
-// Fetch events
-const events = await fetcher.fetchEvents(contract, 'EventName', {
+// Fetch logs
+const logs = await fetcher.fetchLogs({
+  address: '0x...',  // Contract address (single address only)
+  topics: ['0x...'],  // Event topic filters
   fromBlock: 1000000,
   toBlock: 1010000,
-  contractAddress: '0x...',
 });
 
-// Process events as needed
-const processedEvents = events.map((event) => ({
-  blockNumber: event.blockNumber,
-  transactionHash: event.transactionHash,
-  args: event.args,
-}));
+// Process logs as needed
+logs.forEach(log => {
+  console.log(`Block ${log.blockNumber}: ${log.transactionHash}`);
+});
 ```
 
 ## Configuration
@@ -61,28 +56,29 @@ import { GenericEventFetcher, FetcherConfig } from 'eth-parallel-event-fetcher';
 
 const config: FetcherConfig = {
   // Concurrency and performance
-  concurrency: 10, // Number of parallel requests (1-50)
-  chunkSize: 5000, // Blocks per chunk (100-100,000)
+  concurrency: 10,        // Number of parallel requests (1-50)
+  chunkSize: 5000,        // Blocks per chunk (100-100,000)
 
   // Retry configuration
-  maxRetries: 3, // Number of retry attempts (0-10)
+  maxRetries: 3,          // Number of retry attempts (0-10)
   initialRetryDelay: 1000, // Initial delay in ms (100-30,000)
 
   // Rate limiting
   rateLimitPerSecond: 10, // Requests per second (1-1,000)
 
   // Progress tracking
-  showProgress: true, // Show console progress
+  showProgress: true,     // Show console progress
   progressCallback: (completed, total, chunk) => {
     console.log(`Progress: ${completed}/${total} chunks`);
   },
 
   // Error handling
-  continueOnError: true, // Continue on individual chunk errors
-  maxLogsPerChunk: 9500, // Max logs per chunk to avoid truncation
+  continueOnError: true,  // Continue on individual chunk errors
+  maxLogsPerChunk: 9500,  // Max logs per chunk to avoid truncation
 };
 
-const fetcher = new GenericEventFetcher(config);
+// Provider is required as first parameter
+const fetcher = new GenericEventFetcher(provider, config);
 ```
 
 ### Environment Variables
@@ -131,26 +127,45 @@ const DEFAULT_CONFIG = {
 #### Constructor
 
 ```typescript
-new GenericEventFetcher<TRawEvent, TAddress>(config?: Partial<FetcherConfig>)
+new GenericEventFetcher(provider: ethers.providers.Provider, config?: Partial<FetcherConfig>)
 ```
+
+**Parameters:**
+- `provider` (required): An ethers.js provider instance
+- `config` (optional): Configuration options
 
 #### Methods
 
-##### fetchEvents()
+##### fetchLogs()
 
 ```typescript
-async fetchEvents(
-  contract: ContractInterface<TAddress>,
-  eventName: string,
-  options: EventFetcherOptions<TAddress>
-): Promise<TRawEvent[]>
+async fetchLogs(
+  filter: LogFilter,
+  options?: FetchLogsOptions
+): Promise<ethers.providers.Log[]>
 ```
 
 **Parameters:**
 
-- `contract`: Ethers contract instance with event filters
-- `eventName`: Name of the event to fetch (must match contract ABI)
-- `options`: Fetch options including block range and contract address
+- `filter`: Ethereum log filter
+  - `address?: string` - Contract address (single address only)
+  - `topics?: Array<string | Array<string> | null>` - Topic filters
+  - `fromBlock?: number | string` - Starting block
+  - `toBlock?: number | string` - Ending block
+  - `blockHash?: string` - Specific block hash
+
+- `options`: Additional fetch options (overrides constructor config)
+  - `chunkSize?: number`
+  - `concurrency?: number`
+  - `maxRetries?: number`
+  - `initialRetryDelay?: number`
+  - `rateLimitPerSecond?: number`
+  - `showProgress?: boolean`
+  - `onProgress?: (completed: number, total: number, chunk: [number, number]) => void`
+  - `continueOnError?: boolean`
+  - `maxLogsPerChunk?: number`
+
+**Returns:** Array of ethers.providers.Log objects
 
 ##### updateConfig()
 
@@ -170,23 +185,37 @@ Get the current configuration.
 
 ### Types
 
-#### EventFetcherOptions
+#### LogFilter
 
 ```typescript
-interface EventFetcherOptions<TAddress = string> {
-  fromBlock: number;
-  toBlock: number;
-  contractAddress: TAddress;
+interface LogFilter {
+  address?: string;                              // Contract address (single address only)
+  topics?: Array<string | Array<string> | null>; // Topic filters
+  fromBlock?: number | string;                   // Starting block
+  toBlock?: number | string;                     // Ending block
+  blockHash?: string;                            // Specific block hash
+}
+```
+
+#### FetchLogsOptions
+
+```typescript
+interface FetchLogsOptions {
   chunkSize?: number;
+  concurrency?: number;
   maxRetries?: number;
   initialRetryDelay?: number;
+  rateLimitPerSecond?: number;
+  showProgress?: boolean;
   onProgress?: (completed: number, total: number, chunk: [number, number]) => void;
+  continueOnError?: boolean;
+  maxLogsPerChunk?: number;
 }
 ```
 
 ## Usage Examples
 
-### Basic Event Fetching
+### Basic Log Fetching
 
 ```typescript
 import { GenericEventFetcher } from 'eth-parallel-event-fetcher';
@@ -194,255 +223,256 @@ import { ethers } from 'ethers';
 
 // Setup
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-const contract = new ethers.Contract(ADDRESS, ABI, provider);
-const fetcher = new GenericEventFetcher({ concurrency: 8 });
+const fetcher = new GenericEventFetcher(provider, { concurrency: 8 });
 
-// Fetch events
-const events = await fetcher.fetchEvents(contract, 'Transfer', {
+// Fetch Transfer event logs
+const transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const logs = await fetcher.fetchLogs({
+  address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC contract
+  topics: [transferTopic],
   fromBlock: 18000000,
   toBlock: 18100000,
-  contractAddress: ADDRESS,
 });
 
-console.log(`Found ${events.length} Transfer events`);
+console.log(`Found ${logs.length} Transfer logs`);
 ```
 
-### Advanced Event Processing
+### Advanced Log Processing
 
 ```typescript
 // Fetch with progress tracking
-const events = await fetcher.fetchEvents(contract, 'Transfer', {
-  fromBlock: 18000000,
-  toBlock: 18100000,
-  contractAddress: ADDRESS,
-  onProgress: (completed, total) => {
-    console.log(`Progress: ${completed}/${total} chunks`);
+const logs = await fetcher.fetchLogs(
+  {
+    address: CONTRACT_ADDRESS,
+    topics: [EVENT_TOPIC],
+    fromBlock: 18000000,
+    toBlock: 18100000,
   },
-});
+  {
+    onProgress: (completed, total) => {
+      console.log(`Progress: ${completed}/${total} chunks`);
+    },
+  }
+);
 
-// Process events as needed
-const transfers = events.map((event) => ({
-  from: event.args.from,
-  to: event.args.to,
-  value: ethers.utils.formatEther(event.args.value),
-  blockNumber: event.blockNumber,
-  transactionHash: event.transactionHash,
-  timestamp: null, // Will be populated separately if needed
-}));
+// Process logs with ethers
+const iface = new ethers.utils.Interface(ABI);
+const transfers = logs.map(log => {
+  const parsed = iface.parseLog(log);
+  return {
+    from: parsed.args.from,
+    to: parsed.args.to,
+    value: ethers.utils.formatEther(parsed.args.value),
+    blockNumber: log.blockNumber,
+    transactionHash: log.transactionHash,
+  };
+});
 ```
 
-### Working with Custom Event Types
+### Using Block Tags
 
 ```typescript
-// Type-safe usage with custom interfaces
-interface MyContract {
-  address: string;
-  filters: {
-    MyEvent(): ethers.EventFilter;
-  };
-  queryFilter(
-    filter: ethers.EventFilter,
-    fromBlock?: number,
-    toBlock?: number
-  ): Promise<ethers.Event[]>;
-}
-
-interface MyEvent extends RawEvent {
-  args: {
-    param1: string;
-    param2: number;
-  };
-}
-
-const typedFetcher = new GenericEventFetcher<MyEvent, string>();
-const events = await typedFetcher.fetchEvents(contract as MyContract, 'MyEvent', {
-  fromBlock: 18000000,
-  toBlock: 18100000,
-  contractAddress: CONTRACT_ADDRESS,
+// Use block tags instead of numbers
+const logs = await fetcher.fetchLogs({
+  address: CONTRACT_ADDRESS,
+  fromBlock: 'earliest',
+  toBlock: 'latest',
 });
-
-// Process events after fetching
-const processedEvents = events.map((event) => ({
-  param1: event.args.param1,
-  param2: event.args.param2,
-  blockNumber: event.blockNumber,
-  txHash: event.transactionHash,
-  contractAddress: CONTRACT_ADDRESS,
-}));
 ```
 
 ### Error Handling
 
 ```typescript
 try {
-  const events = await fetcher.fetchEvents(contract, 'EventName', options);
+  const logs = await fetcher.fetchLogs(filter, options);
 } catch (error) {
   if (error.message.includes('truncation detected')) {
-    console.log('Try reducing chunk size');
+    // Too many logs in a chunk
+    console.log('Chunk too large, reducing chunk size...');
+
     // Retry with smaller chunks
-    const smallerFetcher = new GenericEventFetcher({ chunkSize: 1000 });
-    const events = await smallerFetcher.fetchEvents(contract, 'EventName', options);
+    const updatedFetcher = new GenericEventFetcher(provider, {
+      ...fetcher.getConfig(),
+      chunkSize: 1000
+    });
+    const logs = await updatedFetcher.fetchLogs(filter, options);
   } else {
     console.error('Fetch failed:', error);
   }
 }
 ```
 
+### Dynamic Configuration Updates
+
+```typescript
+const fetcher = new GenericEventFetcher(provider, { concurrency: 4 });
+
+// Update configuration based on network conditions
+if (networkIsSlow) {
+  fetcher.updateConfig({
+    concurrency: 2,
+    chunkSize: 1000,
+    maxRetries: 5,
+  });
+}
+```
+
 ## Performance Tips
 
-### Chunk Size Optimization
+### 1. Optimize Chunk Size
 
-- **Large ranges**: Use larger chunks (5,000-10,000 blocks) for sparse events
-- **Dense events**: Use smaller chunks (1,000-2,000 blocks) to avoid truncation
-- **Provider limits**: Stay under provider log limits (usually 10,000 logs per request)
+Smaller chunks (1,000-5,000 blocks):
+- Better for contracts with many events
+- Reduces risk of hitting log limits
+- More granular progress tracking
 
-### Concurrency Settings
+Larger chunks (10,000-50,000 blocks):
+- Better for sparse events
+- Fewer total requests
+- Faster for simple queries
 
-- **Alchemy/Infura**: 8-15 concurrent requests work well
-- **Local node**: Can handle higher concurrency (20-30)
-- **Rate limited providers**: Reduce concurrency and increase retry delay
+### 2. Adjust Concurrency
 
-### Memory Considerations
+```typescript
+// For rate-limited endpoints
+const fetcher = new GenericEventFetcher(provider, {
+  concurrency: 2,
+  rateLimitPerSecond: 5,
+});
 
-- For very large ranges, process results in batches
-- Use streaming or pagination for millions of events
-- Monitor memory usage with large chunk sizes
+// For high-performance nodes
+const fetcher = new GenericEventFetcher(provider, {
+  concurrency: 20,
+  rateLimitPerSecond: 100,
+});
+```
+
+### 3. Handle Large Date Ranges
+
+```typescript
+// Split very large ranges into multiple calls
+const BATCH_SIZE = 100000; // blocks per batch
+const allLogs = [];
+
+for (let from = startBlock; from < endBlock; from += BATCH_SIZE) {
+  const to = Math.min(from + BATCH_SIZE - 1, endBlock);
+
+  const logs = await fetcher.fetchLogs({
+    address: CONTRACT_ADDRESS,
+    fromBlock: from,
+    toBlock: to,
+  });
+
+  allLogs.push(...logs);
+}
+```
+
+### 4. Monitor Progress
+
+```typescript
+const fetcher = new GenericEventFetcher(provider, {
+  showProgress: true,
+  progressCallback: (completed, total, chunk) => {
+    const percentage = ((completed / total) * 100).toFixed(2);
+    const [fromBlock, toBlock] = chunk;
+    console.log(`${percentage}% complete. Current chunk: ${fromBlock}-${toBlock}`);
+  },
+});
+```
 
 ## Troubleshooting
 
 ### Common Issues
 
-**"Potential event truncation detected"**
+#### 1. "Log response size exceeded" Error
 
-- Reduce `chunkSize` to stay under provider limits
-- Check if the block range has unusually high activity
+**Problem**: Too many logs in a single chunk.
 
-**Rate limiting errors**
-
-- Reduce `concurrency`
-- Increase `initialRetryDelay`
-- Adjust `rateLimitPerSecond`
-
-**Timeout errors**
-
-- Increase `maxRetries`
-- Reduce `chunkSize` for problematic ranges
-- Check network connectivity
-
-### Debug Mode
-
-Enable detailed logging:
-
+**Solution**: Reduce chunk size
 ```typescript
-const fetcher = new GenericEventFetcher({
-  showProgress: true,
-  progressCallback: (completed, total, chunk) => {
-    console.log(`Chunk ${completed}/${total}: blocks ${chunk[0]}-${chunk[1]}`);
-  },
+const fetcher = new GenericEventFetcher(provider, {
+  chunkSize: 1000,  // Smaller chunks
+  maxLogsPerChunk: 5000,  // Lower limit
 });
 ```
 
-## License
+#### 2. Rate Limiting Errors
 
-ISC
+**Problem**: Too many requests per second.
+
+**Solution**: Reduce concurrency and add rate limiting
+```typescript
+const fetcher = new GenericEventFetcher(provider, {
+  concurrency: 2,
+  rateLimitPerSecond: 5,
+  initialRetryDelay: 2000,
+});
+```
+
+#### 3. Memory Issues with Large Result Sets
+
+**Problem**: Too many logs in memory at once.
+
+**Solution**: Process in batches
+```typescript
+// Process logs in smaller batches
+const BATCH_SIZE = 50000;
+for (let i = 0; i < totalBlocks; i += BATCH_SIZE) {
+  const logs = await fetcher.fetchLogs({
+    fromBlock: startBlock + i,
+    toBlock: Math.min(startBlock + i + BATCH_SIZE, endBlock),
+  });
+
+  // Process and persist logs immediately
+  await processLogs(logs);
+
+  // Clear logs from memory
+  logs.length = 0;
+}
+```
+
+#### 4. Timeout Errors
+
+**Problem**: RPC endpoint timing out.
+
+**Solution**: Reduce chunk size and concurrency
+```typescript
+const fetcher = new GenericEventFetcher(provider, {
+  chunkSize: 2000,
+  concurrency: 3,
+  maxRetries: 5,
+  initialRetryDelay: 3000,
+});
+```
 
 ## Testing
 
-### Running Tests
-
-The library includes comprehensive test coverage with unit tests, integration tests, and large-scale testing.
+Run the test suite:
 
 ```bash
+# Install dependencies
+npm install
+
 # Run all tests
 npm test
 
+# Run with coverage
+npm run test:coverage
+
 # Run specific test file
-npm test -- config.test.ts
-
-# Run tests with coverage
-npm test -- --coverage
-
-# Run tests in watch mode
-npm test -- --watch
+npm test -- fetcher.test.ts
 ```
-
-### Test Environment Setup
-
-Tests require a local blockchain fork using Hardhat. The test setup automatically:
-
-- Forks Ethereum mainnet at block 18,500,000
-- Uses USDC contract for realistic testing
-- Provides 10-second timeout for setup
-
-```bash
-# Start hardhat fork for testing (automatic)
-npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/your-key
-```
-
-### Test Structure
-
-The test suite is organized into several categories:
-
-#### Unit Tests
-
-- **config.test.ts** (20 tests): Configuration system testing
-- **fetcher.test.ts** (18 tests): GenericEventFetcher class testing
-- **utils.test.ts** (31 tests): Utility functions testing
-
-#### Integration Tests
-
-- **connectivity.test.ts** (3 tests): Blockchain connection testing
-- **integration-basic.test.ts** (3 tests): Basic event fetching
-- **integration-parallel.test.ts** (4 tests): Parallel processing
-- **integration-processor.test.ts** (3 tests): Event transformation patterns
-
-#### Error Handling & Large-Scale Tests
-
-- **error-handling-simple.test.ts** (3 tests): Configuration validation
-- **integration-large-scale-real.test.ts** (1 test): >500k block processing
-
-### Test Features
-
-- **Real blockchain data**: Tests use actual USDC Transfer events
-- **Parallel processing verification**: Tests verify concurrent chunk processing
-- **Event processing patterns**: Demonstrates various ways to transform fetched events
-- **Error scenario coverage**: Tests configuration validation and edge cases
-- **Large-scale validation**: Confirms library handles production workloads (>500k blocks)
-
-### Writing New Tests
-
-When adding tests, follow these patterns:
-
-```typescript
-// Unit test example
-describe('New Feature', () => {
-  test('should handle specific scenario', () => {
-    // Test implementation
-    expect(result).toBeDefined();
-  });
-});
-
-// Integration test example
-describe('Integration - New Feature', () => {
-  beforeAll(async () => {
-    // Setup with real provider
-  });
-
-  test('should work with real blockchain data', async () => {
-    // Test with actual events
-  }, 30000); // 30s timeout for integration tests
-});
-```
-
-### Test Configuration
-
-Tests use Jest with the following configuration:
-
-- TypeScript support via `ts-jest`
-- ES module handling for dependencies
-- Mock implementations for external dependencies
-- 30-second timeout for integration tests
 
 ## Contributing
 
-This library is part of a larger project. For contributions and issues, please refer to the main project repository.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
