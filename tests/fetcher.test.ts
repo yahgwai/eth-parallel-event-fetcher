@@ -2,11 +2,20 @@ import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
 import { FetcherConfig } from '../types/interfaces';
 import { ConfigurationError } from '../src/errors';
+import { ethers } from 'ethers';
 
 describe('GenericEventFetcher', () => {
+  let mockProvider: ethers.providers.Provider;
+
+  beforeEach(() => {
+    mockProvider = {
+      getLogs: jest.fn(),
+      getBlockNumber: jest.fn(),
+    } as unknown as ethers.providers.Provider;
+  });
   describe('constructor', () => {
     test('should initialize with default config when no config provided', () => {
-      const fetcher = new GenericEventFetcher();
+      const fetcher = new GenericEventFetcher(mockProvider);
       const config = fetcher.getConfig();
 
       expect(config).toEqual(DEFAULT_CONFIG);
@@ -19,7 +28,7 @@ describe('GenericEventFetcher', () => {
         maxRetries: 5,
       };
 
-      const fetcher = new GenericEventFetcher(overrides);
+      const fetcher = new GenericEventFetcher(mockProvider, overrides);
       const config = fetcher.getConfig();
 
       expect(config).toEqual({
@@ -33,7 +42,7 @@ describe('GenericEventFetcher', () => {
       process.env.ETH_FETCHER_CONCURRENCY = '12';
       process.env.ETH_FETCHER_CHUNK_SIZE = '5000';
 
-      const fetcher = new GenericEventFetcher();
+      const fetcher = new GenericEventFetcher(mockProvider);
       const config = fetcher.getConfig();
 
       expect(config.concurrency).toBe(12);
@@ -48,7 +57,7 @@ describe('GenericEventFetcher', () => {
       // Set env var
       process.env.ETH_FETCHER_CONCURRENCY = '8';
 
-      const fetcher = new GenericEventFetcher({ concurrency: 12 });
+      const fetcher = new GenericEventFetcher(mockProvider, { concurrency: 12 });
       const config = fetcher.getConfig();
 
       expect(config.concurrency).toBe(12); // Override wins
@@ -59,17 +68,17 @@ describe('GenericEventFetcher', () => {
 
     test('should throw error for invalid configuration', () => {
       expect(() => {
-        new GenericEventFetcher({ concurrency: 0 });
+        new GenericEventFetcher(mockProvider, { concurrency: 0 });
       }).toThrow(ConfigurationError);
 
       expect(() => {
-        new GenericEventFetcher({ concurrency: 0 });
+        new GenericEventFetcher(mockProvider, { concurrency: 0 });
       }).toThrow('Configuration validation failed');
     });
 
     test('should throw error with multiple validation errors', () => {
       expect(() => {
-        new GenericEventFetcher({
+        new GenericEventFetcher(mockProvider, {
           concurrency: 0,
           chunkSize: 50,
           maxRetries: -1,
@@ -78,7 +87,7 @@ describe('GenericEventFetcher', () => {
 
       // Test that the error contains the expected validation messages
       try {
-        new GenericEventFetcher({
+        new GenericEventFetcher(mockProvider, {
           concurrency: 0,
           chunkSize: 50,
           maxRetries: -1,
@@ -94,7 +103,7 @@ describe('GenericEventFetcher', () => {
 
     test('should initialize with custom progressCallback', () => {
       const mockCallback = jest.fn();
-      const fetcher = new GenericEventFetcher({
+      const fetcher = new GenericEventFetcher(mockProvider, {
         progressCallback: mockCallback,
       });
       const config = fetcher.getConfig();
@@ -105,7 +114,7 @@ describe('GenericEventFetcher', () => {
 
   describe('getConfig', () => {
     test('should return a copy of the current configuration', () => {
-      const fetcher = new GenericEventFetcher({ concurrency: 8 });
+      const fetcher = new GenericEventFetcher(mockProvider, { concurrency: 8 });
       const config1 = fetcher.getConfig();
       const config2 = fetcher.getConfig();
 
@@ -115,7 +124,7 @@ describe('GenericEventFetcher', () => {
     });
 
     test('should return complete configuration with all required properties', () => {
-      const fetcher = new GenericEventFetcher();
+      const fetcher = new GenericEventFetcher(mockProvider);
       const config = fetcher.getConfig();
 
       expect(config).toHaveProperty('concurrency');
@@ -130,7 +139,7 @@ describe('GenericEventFetcher', () => {
     });
 
     test('should not allow external modification of returned config', () => {
-      const fetcher = new GenericEventFetcher({ concurrency: 8 });
+      const fetcher = new GenericEventFetcher(mockProvider, { concurrency: 8 });
       const config = fetcher.getConfig();
 
       // Modify the returned config
@@ -144,7 +153,7 @@ describe('GenericEventFetcher', () => {
 
   describe('updateConfig', () => {
     test('should update configuration with valid values', () => {
-      const fetcher = new GenericEventFetcher({ concurrency: 4 });
+      const fetcher = new GenericEventFetcher(mockProvider, { concurrency: 4 });
 
       fetcher.updateConfig({
         concurrency: 8,
@@ -158,7 +167,7 @@ describe('GenericEventFetcher', () => {
     });
 
     test('should merge new config with existing config', () => {
-      const fetcher = new GenericEventFetcher({
+      const fetcher = new GenericEventFetcher(mockProvider, {
         concurrency: 4,
         chunkSize: 5000,
         showProgress: true,
@@ -177,7 +186,7 @@ describe('GenericEventFetcher', () => {
     });
 
     test('should throw error for invalid configuration updates', () => {
-      const fetcher = new GenericEventFetcher();
+      const fetcher = new GenericEventFetcher(mockProvider);
 
       expect(() => {
         fetcher.updateConfig({ concurrency: 0 });
@@ -189,7 +198,7 @@ describe('GenericEventFetcher', () => {
     });
 
     test('should throw error with multiple validation errors on update', () => {
-      const fetcher = new GenericEventFetcher();
+      const fetcher = new GenericEventFetcher(mockProvider);
 
       expect(() => {
         fetcher.updateConfig({
@@ -213,7 +222,7 @@ describe('GenericEventFetcher', () => {
     });
 
     test('should not modify config if validation fails', () => {
-      const fetcher = new GenericEventFetcher({ concurrency: 8 });
+      const fetcher = new GenericEventFetcher(mockProvider, { concurrency: 8 });
       const originalConfig = fetcher.getConfig();
 
       expect(() => {
@@ -226,7 +235,7 @@ describe('GenericEventFetcher', () => {
     });
 
     test('should allow updating progressCallback function', () => {
-      const fetcher = new GenericEventFetcher();
+      const fetcher = new GenericEventFetcher(mockProvider);
       const newCallback = jest.fn();
 
       fetcher.updateConfig({ progressCallback: newCallback });
@@ -239,7 +248,7 @@ describe('GenericEventFetcher', () => {
       // Set env var
       process.env.ETH_FETCHER_CONCURRENCY = '6';
 
-      const fetcher = new GenericEventFetcher();
+      const fetcher = new GenericEventFetcher(mockProvider);
 
       // Update should still work with env vars in place
       fetcher.updateConfig({ chunkSize: 8000 });
@@ -253,7 +262,7 @@ describe('GenericEventFetcher', () => {
     });
 
     test('should handle undefined values in partial update', () => {
-      const fetcher = new GenericEventFetcher({ concurrency: 8 });
+      const fetcher = new GenericEventFetcher(mockProvider, { concurrency: 8 });
 
       fetcher.updateConfig({
         chunkSize: 5000,
