@@ -7,12 +7,16 @@ export const TEST_TO_BLOCK = 18500100;
 export let testProvider: ethers.providers.JsonRpcProvider;
 export let usdcContract: ethers.Contract;
 
-beforeAll(async () => {  testProvider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
+beforeAll(async () => {
+  testProvider = new ethers.providers.JsonRpcProvider('http://localhost:8545');
   usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, testProvider);
 }, 10000);
 
-afterAll(async () => {  if (testProvider) {    testProvider.removeAllListeners();
-    testProvider.polling = false;    const provider = testProvider as any;
+afterAll(async () => {
+  if (testProvider) {
+    testProvider.removeAllListeners();
+    testProvider.polling = false;
+    const provider = testProvider as any;
     if (provider._websocket) {
       provider._websocket.close();
     }

@@ -1,13 +1,13 @@
 import { ethers } from 'ethers';
-import {
-  FetcherConfig,
-  LogFilter,
-  FetchLogsOptions,
-  LogChunkResult,
-} from '../types';
+import { FetcherConfig, LogFilter, FetchLogsOptions, LogChunkResult } from '../types';
 import { executeInParallel, createBlockRangeChunks } from './utils/parallel';
 import { createConfig, validateConfig } from './config';
-import { ConfigurationError, EventFetchError, ChunkTruncationError, BlockRangeError } from './errors';
+import {
+  ConfigurationError,
+  EventFetchError,
+  ChunkTruncationError,
+  BlockRangeError,
+} from './errors';
 
 /**
  * Generic event fetcher implementation that can work with any Ethereum contract events
@@ -19,10 +19,7 @@ export class GenericEventFetcher {
   /**
    * Creates a new instance of GenericEventFetcher
    */
-  constructor(
-    provider: ethers.providers.Provider,
-    config: Partial<FetcherConfig> = {}
-  ) {
+  constructor(provider: ethers.providers.Provider, config: Partial<FetcherConfig> = {}) {
     this.config = createConfig(config);
     this.provider = provider;
 
@@ -31,7 +28,6 @@ export class GenericEventFetcher {
       throw new ConfigurationError('Configuration validation failed', validation.errors);
     }
   }
-
 
   /**
    * Fetch logs using ethers-like interface with parallel processing and retry logic

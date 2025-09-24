@@ -74,7 +74,6 @@ describe('Integration - fetchLogs', () => {
       }
     }, 30000);
 
-
     it('should handle block range with no logs', async () => {
       const nonExistentAddress = '0x0000000000000000000000000000000000000001';
 

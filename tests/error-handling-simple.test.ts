@@ -110,9 +110,7 @@ describe('Error Handling - Simple Tests', () => {
         toBlock: 'pending',
       };
 
-      await expect(fetcher.fetchLogs(filter)).rejects.toThrow(
-        'Pending block tag is not supported'
-      );
+      await expect(fetcher.fetchLogs(filter)).rejects.toThrow('Pending block tag is not supported');
     });
 
     it('should handle invalid block tag strings', async () => {

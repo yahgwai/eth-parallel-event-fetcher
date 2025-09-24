@@ -35,7 +35,6 @@ describe('GenericEventFetcher - fetchLogs', () => {
       expect(logs).toEqual([]);
       expect(mockGetLogs).toHaveBeenCalled();
     });
-
   });
 
   describe('basic fetching', () => {
@@ -108,7 +107,6 @@ describe('GenericEventFetcher - fetchLogs', () => {
       expect(logs).toEqual([]);
       expect(logs.length).toBe(0);
     });
-
   });
 
   describe('block tag resolution', () => {
@@ -176,9 +174,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 'pending',
       };
 
-      await expect(fetcher.fetchLogs(filter)).rejects.toThrow(
-        'Pending block tag is not supported'
-      );
+      await expect(fetcher.fetchLogs(filter)).rejects.toThrow('Pending block tag is not supported');
     });
 
     test('should handle string numbers', async () => {
@@ -254,10 +250,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
     });
 
     test('should merge options with default config', async () => {
-      const fetcher = new GenericEventFetcher(
-        mockProvider,
-        { ...DEFAULT_CONFIG, chunkSize: 1000 }
-      );
+      const fetcher = new GenericEventFetcher(mockProvider, { ...DEFAULT_CONFIG, chunkSize: 1000 });
       mockGetLogs.mockResolvedValue([]);
 
       const filter: LogFilter = {
@@ -272,10 +265,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
     });
 
     test('should handle continueOnError option', async () => {
-      const fetcher = new GenericEventFetcher(
-        mockProvider,
-        { ...DEFAULT_CONFIG, chunkSize: 500 }
-      );
+      const fetcher = new GenericEventFetcher(mockProvider, { ...DEFAULT_CONFIG, chunkSize: 500 });
 
       mockGetLogs
         .mockResolvedValueOnce([])

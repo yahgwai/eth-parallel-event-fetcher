@@ -35,14 +35,14 @@ const fetcher = new GenericEventFetcher(provider);
 
 // Fetch logs
 const logs = await fetcher.fetchLogs({
-  address: '0x...',  // Contract address (single address only)
-  topics: ['0x...'],  // Event topic filters
+  address: '0x...', // Contract address (single address only)
+  topics: ['0x...'], // Event topic filters
   fromBlock: 1000000,
   toBlock: 1010000,
 });
 
 // Process logs as needed
-logs.forEach(log => {
+logs.forEach((log) => {
   console.log(`Block ${log.blockNumber}: ${log.transactionHash}`);
 });
 ```
@@ -56,25 +56,25 @@ import { GenericEventFetcher, FetcherConfig } from 'eth-parallel-event-fetcher';
 
 const config: FetcherConfig = {
   // Concurrency and performance
-  concurrency: 10,        // Number of parallel requests (1-50)
-  chunkSize: 5000,        // Blocks per chunk (100-100,000)
+  concurrency: 10, // Number of parallel requests (1-50)
+  chunkSize: 5000, // Blocks per chunk (100-100,000)
 
   // Retry configuration
-  maxRetries: 3,          // Number of retry attempts (0-10)
+  maxRetries: 3, // Number of retry attempts (0-10)
   initialRetryDelay: 1000, // Initial delay in ms (100-30,000)
 
   // Rate limiting
   rateLimitPerSecond: 10, // Requests per second (1-1,000)
 
   // Progress tracking
-  showProgress: true,     // Show console progress
+  showProgress: true, // Show console progress
   progressCallback: (completed, total, chunk) => {
     console.log(`Progress: ${completed}/${total} chunks`);
   },
 
   // Error handling
-  continueOnError: true,  // Continue on individual chunk errors
-  maxLogsPerChunk: 9500,  // Max logs per chunk to avoid truncation
+  continueOnError: true, // Continue on individual chunk errors
+  maxLogsPerChunk: 9500, // Max logs per chunk to avoid truncation
 };
 
 // Provider is required as first parameter
@@ -131,6 +131,7 @@ new GenericEventFetcher(provider: ethers.providers.Provider, config?: Partial<Fe
 ```
 
 **Parameters:**
+
 - `provider` (required): An ethers.js provider instance
 - `config` (optional): Configuration options
 
@@ -148,6 +149,7 @@ async fetchLogs(
 **Parameters:**
 
 - `filter`: Ethereum log filter
+
   - `address?: string` - Contract address (single address only)
   - `topics?: Array<string | Array<string> | null>` - Topic filters
   - `fromBlock?: number | string` - Starting block
@@ -189,11 +191,11 @@ Get the current configuration.
 
 ```typescript
 interface LogFilter {
-  address?: string;                              // Contract address (single address only)
+  address?: string; // Contract address (single address only)
   topics?: Array<string | Array<string> | null>; // Topic filters
-  fromBlock?: number | string;                   // Starting block
-  toBlock?: number | string;                     // Ending block
-  blockHash?: string;                            // Specific block hash
+  fromBlock?: number | string; // Starting block
+  toBlock?: number | string; // Ending block
+  blockHash?: string; // Specific block hash
 }
 ```
 
@@ -257,7 +259,7 @@ const logs = await fetcher.fetchLogs(
 
 // Process logs with ethers
 const iface = new ethers.utils.Interface(ABI);
-const transfers = logs.map(log => {
+const transfers = logs.map((log) => {
   const parsed = iface.parseLog(log);
   return {
     from: parsed.args.from,
@@ -293,7 +295,7 @@ try {
     // Retry with smaller chunks
     const updatedFetcher = new GenericEventFetcher(provider, {
       ...fetcher.getConfig(),
-      chunkSize: 1000
+      chunkSize: 1000,
     });
     const logs = await updatedFetcher.fetchLogs(filter, options);
   } else {
@@ -322,11 +324,13 @@ if (networkIsSlow) {
 ### 1. Optimize Chunk Size
 
 Smaller chunks (1,000-5,000 blocks):
+
 - Better for contracts with many events
 - Reduces risk of hitting log limits
 - More granular progress tracking
 
 Larger chunks (10,000-50,000 blocks):
+
 - Better for sparse events
 - Fewer total requests
 - Faster for simple queries
@@ -389,10 +393,11 @@ const fetcher = new GenericEventFetcher(provider, {
 **Problem**: Too many logs in a single chunk.
 
 **Solution**: Reduce chunk size
+
 ```typescript
 const fetcher = new GenericEventFetcher(provider, {
-  chunkSize: 1000,  // Smaller chunks
-  maxLogsPerChunk: 5000,  // Lower limit
+  chunkSize: 1000, // Smaller chunks
+  maxLogsPerChunk: 5000, // Lower limit
 });
 ```
 
@@ -401,6 +406,7 @@ const fetcher = new GenericEventFetcher(provider, {
 **Problem**: Too many requests per second.
 
 **Solution**: Reduce concurrency and add rate limiting
+
 ```typescript
 const fetcher = new GenericEventFetcher(provider, {
   concurrency: 2,
@@ -414,6 +420,7 @@ const fetcher = new GenericEventFetcher(provider, {
 **Problem**: Too many logs in memory at once.
 
 **Solution**: Process in batches
+
 ```typescript
 // Process logs in smaller batches
 const BATCH_SIZE = 50000;
@@ -436,6 +443,7 @@ for (let i = 0; i < totalBlocks; i += BATCH_SIZE) {
 **Problem**: RPC endpoint timing out.
 
 **Solution**: Reduce chunk size and concurrency
+
 ```typescript
 const fetcher = new GenericEventFetcher(provider, {
   chunkSize: 2000,

@@ -46,7 +46,8 @@ export async function createProvider(options: ProviderOptions = {}): Promise<Ret
     retryJitter,
   });
   provider.pollingInterval = pollingInterval;
-  try {    await provider.getNetwork();
+  try {
+    await provider.getNetwork();
 
     return provider;
   } catch (error) {
@@ -64,7 +65,8 @@ export async function createProvider(options: ProviderOptions = {}): Promise<Ret
 export async function getProviderStatus(
   provider: ethers.providers.JsonRpcProvider
 ): Promise<ProviderStatus> {
-  try {    const [network, blockNumber, isSyncing] = await Promise.all([
+  try {
+    const [network, blockNumber, isSyncing] = await Promise.all([
       provider.getNetwork(),
       provider.getBlockNumber(),
       provider.send('eth_syncing', []),
