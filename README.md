@@ -34,7 +34,7 @@ const provider = new ethers.providers.JsonRpcProvider('your-rpc-url');
 const fetcher = new GenericEventFetcher(provider);
 
 // Fetch logs
-const logs = await fetcher.fetchLogs({
+const logs = await fetcher.getLogs({
   address: '0x...', // Contract address (single address only)
   topics: ['0x...'], // Event topic filters
   fromBlock: 1000000,
@@ -137,12 +137,12 @@ new GenericEventFetcher(provider: ethers.providers.Provider, config?: Partial<Fe
 
 #### Methods
 
-##### fetchLogs()
+##### getLogs()
 
 ```typescript
-async fetchLogs(
+async getLogs(
   filter: LogFilter,
-  options?: FetchLogsOptions
+  options?: GetLogsOptions
 ): Promise<ethers.providers.Log[]>
 ```
 
@@ -199,10 +199,10 @@ interface LogFilter {
 }
 ```
 
-#### FetchLogsOptions
+#### GetLogsOptions
 
 ```typescript
-interface FetchLogsOptions {
+interface GetLogsOptions {
   chunkSize?: number;
   concurrency?: number;
   maxRetries?: number;
@@ -229,7 +229,7 @@ const fetcher = new GenericEventFetcher(provider, { concurrency: 8 });
 
 // Fetch Transfer event logs
 const transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-const logs = await fetcher.fetchLogs({
+const logs = await fetcher.getLogs({
   address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC contract
   topics: [transferTopic],
   fromBlock: 18000000,
@@ -243,7 +243,7 @@ console.log(`Found ${logs.length} Transfer logs`);
 
 ```typescript
 // Fetch with progress tracking
-const logs = await fetcher.fetchLogs(
+const logs = await fetcher.getLogs(
   {
     address: CONTRACT_ADDRESS,
     topics: [EVENT_TOPIC],
@@ -275,7 +275,7 @@ const transfers = logs.map((log) => {
 
 ```typescript
 // Use block tags instead of numbers
-const logs = await fetcher.fetchLogs({
+const logs = await fetcher.getLogs({
   address: CONTRACT_ADDRESS,
   fromBlock: 'earliest',
   toBlock: 'latest',
@@ -286,7 +286,7 @@ const logs = await fetcher.fetchLogs({
 
 ```typescript
 try {
-  const logs = await fetcher.fetchLogs(filter, options);
+  const logs = await fetcher.getLogs(filter, options);
 } catch (error) {
   if (error.message.includes('truncation detected')) {
     // Too many logs in a chunk
@@ -297,7 +297,7 @@ try {
       ...fetcher.getConfig(),
       chunkSize: 1000,
     });
-    const logs = await updatedFetcher.fetchLogs(filter, options);
+    const logs = await updatedFetcher.getLogs(filter, options);
   } else {
     console.error('Fetch failed:', error);
   }
@@ -361,7 +361,7 @@ const allLogs = [];
 for (let from = startBlock; from < endBlock; from += BATCH_SIZE) {
   const to = Math.min(from + BATCH_SIZE - 1, endBlock);
 
-  const logs = await fetcher.fetchLogs({
+  const logs = await fetcher.getLogs({
     address: CONTRACT_ADDRESS,
     fromBlock: from,
     toBlock: to,
@@ -425,7 +425,7 @@ const fetcher = new GenericEventFetcher(provider, {
 // Process logs in smaller batches
 const BATCH_SIZE = 50000;
 for (let i = 0; i < totalBlocks; i += BATCH_SIZE) {
-  const logs = await fetcher.fetchLogs({
+  const logs = await fetcher.getLogs({
     fromBlock: startBlock + i,
     toBlock: Math.min(startBlock + i + BATCH_SIZE, endBlock),
   });

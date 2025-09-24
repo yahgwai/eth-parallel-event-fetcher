@@ -80,7 +80,7 @@ describe('Error Handling - Simple Tests', () => {
     );
   });
 
-  describe('fetchLogs error handling', () => {
+  describe('getLogs error handling', () => {
     it('should throw when fromBlock > toBlock', async () => {
       const mockProvider = {
         getLogs: jest.fn(),
@@ -93,7 +93,7 @@ describe('Error Handling - Simple Tests', () => {
         toBlock: 1000,
       };
 
-      await expect(fetcher.fetchLogs(filter)).rejects.toThrow(
+      await expect(fetcher.getLogs(filter)).rejects.toThrow(
         'fromBlock cannot be greater than toBlock'
       );
     });
@@ -110,7 +110,7 @@ describe('Error Handling - Simple Tests', () => {
         toBlock: 'pending',
       };
 
-      await expect(fetcher.fetchLogs(filter)).rejects.toThrow('Pending block tag is not supported');
+      await expect(fetcher.getLogs(filter)).rejects.toThrow('Pending block tag is not supported');
     });
 
     it('should handle invalid block tag strings', async () => {
@@ -125,7 +125,7 @@ describe('Error Handling - Simple Tests', () => {
         toBlock: 'invalid-tag' as any,
       };
 
-      await expect(fetcher.fetchLogs(filter)).rejects.toThrow('Invalid block tag');
+      await expect(fetcher.getLogs(filter)).rejects.toThrow('Invalid block tag');
     });
   });
 });

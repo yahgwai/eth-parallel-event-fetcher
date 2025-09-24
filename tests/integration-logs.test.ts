@@ -1,9 +1,9 @@
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
-import { LogFilter, FetchLogsOptions } from '../types';
+import { LogFilter, GetLogsOptions } from '../types';
 import { testProvider, USDC_ADDRESS, TEST_FROM_BLOCK } from './setup';
 
-describe('Integration - fetchLogs', () => {
+describe('Integration - getLogs', () => {
   let fetcher: GenericEventFetcher;
 
   beforeAll(async () => {
@@ -18,7 +18,7 @@ describe('Integration - fetchLogs', () => {
   }, 10000);
 
   describe('real log fetching', () => {
-    it('should fetch USDC Transfer logs using fetchLogs', async () => {
+    it('should get USDC Transfer logs using getLogs', async () => {
       const transferTopic = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
       const filter: LogFilter = {
@@ -28,7 +28,7 @@ describe('Integration - fetchLogs', () => {
         toBlock: TEST_FROM_BLOCK + 10,
       };
 
-      const logs = await fetcher.fetchLogs(filter);
+      const logs = await fetcher.getLogs(filter);
 
       expect(logs).toBeDefined();
       expect(Array.isArray(logs)).toBe(true);
@@ -57,7 +57,7 @@ describe('Integration - fetchLogs', () => {
         toBlock: TEST_FROM_BLOCK + 5,
       };
 
-      const logs = await fetcher.fetchLogs(filter);
+      const logs = await fetcher.getLogs(filter);
 
       if (logs.length > 0) {
         const log = logs[0];
@@ -82,7 +82,7 @@ describe('Integration - fetchLogs', () => {
         toBlock: TEST_FROM_BLOCK + 10,
       };
 
-      const logs = await fetcher.fetchLogs(filter);
+      const logs = await fetcher.getLogs(filter);
 
       expect(logs).toBeDefined();
       expect(Array.isArray(logs)).toBe(true);
@@ -98,11 +98,11 @@ describe('Integration - fetchLogs', () => {
         toBlock: TEST_FROM_BLOCK + 100,
       };
 
-      const options: FetchLogsOptions = {
+      const options: GetLogsOptions = {
         chunkSize: 20,
       };
 
-      const logs = await fetcher.fetchLogs(filter, options);
+      const logs = await fetcher.getLogs(filter, options);
 
       expect(logs).toBeDefined();
       expect(Array.isArray(logs)).toBe(true);
@@ -117,14 +117,14 @@ describe('Integration - fetchLogs', () => {
         toBlock: TEST_FROM_BLOCK + 100,
       };
 
-      const options: FetchLogsOptions = {
+      const options: GetLogsOptions = {
         chunkSize: 25,
         onProgress: (completed, total) => {
           progressUpdates.push({ completed, total });
         },
       };
 
-      await fetcher.fetchLogs(filter, options);
+      await fetcher.getLogs(filter, options);
 
       expect(progressUpdates.length).toBeGreaterThan(0);
       const lastUpdate = progressUpdates[progressUpdates.length - 1];
@@ -141,7 +141,7 @@ describe('Integration - fetchLogs', () => {
       };
 
       const [fetcherLogs, providerLogs] = await Promise.all([
-        fetcher.fetchLogs(filter),
+        fetcher.getLogs(filter),
         testProvider.getLogs(filter),
       ]);
 
@@ -161,11 +161,11 @@ describe('Integration - fetchLogs', () => {
         toBlock: TEST_FROM_BLOCK + 100,
       };
 
-      const options: FetchLogsOptions = {
+      const options: GetLogsOptions = {
         chunkSize: 20,
       };
 
-      const logs = await fetcher.fetchLogs(filter, options);
+      const logs = await fetcher.getLogs(filter, options);
 
       for (let i = 1; i < logs.length; i++) {
         const prevLog = logs[i - 1];
@@ -191,7 +191,7 @@ describe('Integration - fetchLogs', () => {
         toBlock: 'latest',
       };
 
-      const logs = await fetcher.fetchLogs(filter);
+      const logs = await fetcher.getLogs(filter);
 
       expect(logs).toBeDefined();
       expect(Array.isArray(logs)).toBe(true);
@@ -204,7 +204,7 @@ describe('Integration - fetchLogs', () => {
         toBlock: 100,
       };
 
-      const logs = await fetcher.fetchLogs(filter);
+      const logs = await fetcher.getLogs(filter);
 
       expect(logs).toBeDefined();
       expect(Array.isArray(logs)).toBe(true);

@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { FetcherConfig, LogFilter, FetchLogsOptions, LogChunkResult } from '../types';
+import { FetcherConfig, LogFilter, GetLogsOptions, LogChunkResult } from '../types';
 import { executeInParallel, createBlockRangeChunks } from './utils/parallel';
 import { createConfig, validateConfig } from './config';
 import {
@@ -30,12 +30,9 @@ export class GenericEventFetcher {
   }
 
   /**
-   * Fetch logs using ethers-like interface with parallel processing and retry logic
+   * Get logs using ethers-like interface with parallel processing and retry logic
    */
-  async fetchLogs(
-    filter: LogFilter,
-    options: FetchLogsOptions = {}
-  ): Promise<ethers.providers.Log[]> {
+  async getLogs(filter: LogFilter, options: GetLogsOptions = {}): Promise<ethers.providers.Log[]> {
     const provider = this.provider;
 
     const fromBlock = await this.resolveBlockTag(filter.fromBlock ?? 0, provider);
