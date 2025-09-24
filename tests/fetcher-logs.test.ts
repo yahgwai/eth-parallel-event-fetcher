@@ -1,9 +1,9 @@
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
 import { ethers } from 'ethers';
-import { LogFilter, FetchLogsOptions } from '../types';
+import { LogFilter, GetLogsOptions } from '../types';
 
-describe('GenericEventFetcher - fetchLogs', () => {
+describe('GenericEventFetcher - getLogs', () => {
   let mockProvider: ethers.providers.Provider;
   let mockGetLogs: jest.Mock;
   let mockGetBlockNumber: jest.Mock;
@@ -31,7 +31,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 1100,
       };
 
-      const logs = await fetcher.fetchLogs(filter);
+      const logs = await fetcher.getLogs(filter);
       expect(logs).toEqual([]);
       expect(mockGetLogs).toHaveBeenCalled();
     });
@@ -61,7 +61,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 1100,
       };
 
-      const logs = await fetcher.fetchLogs(filter);
+      const logs = await fetcher.getLogs(filter);
       expect(logs).toEqual(expectedLogs);
       expect(mockGetLogs).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -83,7 +83,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 1100,
       };
 
-      await fetcher.fetchLogs(filter);
+      await fetcher.getLogs(filter);
       expect(mockGetLogs).toHaveBeenCalledWith(
         expect.objectContaining({
           address: '0x123',
@@ -103,7 +103,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 1100,
       };
 
-      const logs = await fetcher.fetchLogs(filter);
+      const logs = await fetcher.getLogs(filter);
       expect(logs).toEqual([]);
       expect(logs.length).toBe(0);
     });
@@ -120,7 +120,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 'latest',
       };
 
-      await fetcher.fetchLogs(filter);
+      await fetcher.getLogs(filter);
       expect(mockGetBlockNumber).toHaveBeenCalled();
       expect(mockGetLogs).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -139,7 +139,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 100,
       };
 
-      await fetcher.fetchLogs(filter);
+      await fetcher.getLogs(filter);
       expect(mockGetLogs).toHaveBeenCalledWith(
         expect.objectContaining({
           fromBlock: 0,
@@ -157,7 +157,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 2000,
       };
 
-      await fetcher.fetchLogs(filter);
+      await fetcher.getLogs(filter);
       expect(mockGetLogs).toHaveBeenCalledWith(
         expect.objectContaining({
           fromBlock: 1000,
@@ -174,7 +174,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 'pending',
       };
 
-      await expect(fetcher.fetchLogs(filter)).rejects.toThrow('Pending block tag is not supported');
+      await expect(fetcher.getLogs(filter)).rejects.toThrow('Pending block tag is not supported');
     });
 
     test('should handle string numbers', async () => {
@@ -186,7 +186,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: '2000',
       };
 
-      await fetcher.fetchLogs(filter);
+      await fetcher.getLogs(filter);
       expect(mockGetLogs).toHaveBeenCalledWith(
         expect.objectContaining({
           fromBlock: 1000,
@@ -206,11 +206,11 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 2999,
       };
 
-      const options: FetchLogsOptions = {
+      const options: GetLogsOptions = {
         chunkSize: 500,
       };
 
-      await fetcher.fetchLogs(filter, options);
+      await fetcher.getLogs(filter, options);
       expect(mockGetLogs).toHaveBeenCalledTimes(4);
       expect(mockGetLogs).toHaveBeenCalledWith(
         expect.objectContaining({ fromBlock: 1000, toBlock: 1499 })
@@ -236,11 +236,11 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 2000,
       };
 
-      const options: FetchLogsOptions = {
+      const options: GetLogsOptions = {
         onProgress,
       };
 
-      await fetcher.fetchLogs(filter, options);
+      await fetcher.getLogs(filter, options);
       expect(onProgress).toHaveBeenCalled();
       expect(onProgress).toHaveBeenCalledWith(
         expect.any(Number),
@@ -258,9 +258,9 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 2999,
       };
 
-      const options: FetchLogsOptions = {};
+      const options: GetLogsOptions = {};
 
-      await fetcher.fetchLogs(filter, options);
+      await fetcher.getLogs(filter, options);
       expect(mockGetLogs).toHaveBeenCalledTimes(2);
     });
 
@@ -277,12 +277,12 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 1500,
       };
 
-      const options: FetchLogsOptions = {
+      const options: GetLogsOptions = {
         continueOnError: true,
         maxRetries: 0,
       };
 
-      const logs = await fetcher.fetchLogs(filter, options);
+      const logs = await fetcher.getLogs(filter, options);
       expect(logs).toEqual([]);
     });
   });
@@ -296,7 +296,7 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 1000,
       };
 
-      await expect(fetcher.fetchLogs(filter)).rejects.toThrow(
+      await expect(fetcher.getLogs(filter)).rejects.toThrow(
         'fromBlock cannot be greater than toBlock'
       );
     });
@@ -310,12 +310,12 @@ describe('GenericEventFetcher - fetchLogs', () => {
         toBlock: 1100,
       };
 
-      const options: FetchLogsOptions = {
+      const options: GetLogsOptions = {
         maxRetries: 0,
         continueOnError: false,
       };
 
-      await expect(fetcher.fetchLogs(filter, options)).rejects.toThrow();
+      await expect(fetcher.getLogs(filter, options)).rejects.toThrow();
     });
   });
 });
