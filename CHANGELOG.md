@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.4.3...v1.5.0) (2025-09-24)
+
+
+### Features
+
+* changed interface to getLogs to be more similar to ethersjs ([5091013](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/50910130b62e294039b2c9ce410619f45be2929c))
+
+
+### Chores
+
+* formatting ([dc1688a](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/dc1688aa8ff6c1465c2bc780a0bdec16fe0d368a))
+* linting updates ([1cecca8](https://github.com/yahgwai/eth-parallel-event-fetcher/commit/1cecca870b70e07a5d86f257e188078af46d03b3))
+
 ### [1.4.3](https://github.com/yahgwai/eth-parallel-event-fetcher/compare/v1.4.2...v1.4.3) (2025-09-23)
 
 
