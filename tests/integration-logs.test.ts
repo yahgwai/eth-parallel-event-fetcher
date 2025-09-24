@@ -1,8 +1,7 @@
-import { ethers } from 'ethers';
 import { GenericEventFetcher } from '../src/fetcher';
 import { DEFAULT_CONFIG } from '../src/config';
-import { LogFilter, FetchLogsOptions, Log } from '../types';
-import { testProvider, USDC_ADDRESS, TEST_FROM_BLOCK, TEST_TO_BLOCK } from './setup';
+import { LogFilter, FetchLogsOptions } from '../types';
+import { testProvider, USDC_ADDRESS, TEST_FROM_BLOCK } from './setup';
 
 describe('Integration - fetchLogs', () => {
   let fetcher: GenericEventFetcher;
